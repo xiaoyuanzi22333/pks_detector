@@ -2,6 +2,7 @@ import os
 import numpy as np
 from MyDataset.simulator_dataset import simulator_dataset
 import utils.utils as utils
+import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from model import pksNet
@@ -58,9 +59,7 @@ def train():
         if epoch%5 == 0:
             if not os.path.exists(model_path):
                 os.mkdir(model_path)
-
-
-
+                torch.save(model.state_dict(), model_path + '/model_' + str(epoch) + '.pth')
 
 
 
