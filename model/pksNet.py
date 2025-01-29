@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 
-class pksNet(nn.modules):
+class pksNet(nn.Module):
     def __init__(self, in_ch=1,hid_ch=3, out_ch=3, window_size=15, step=5):
         super(pksNet, self).__init__()
 
@@ -12,11 +12,11 @@ class pksNet(nn.modules):
         self.steer_encoder = encoder.Res_encoder(in_ch, hid_ch)
         self.throttle_encoder = encoder.Res_encoder(in_ch, hid_ch)
 
-        self.brake_decoder = decoder.simple_Decoder(window_size*hid_ch*2 ,window_size*hid_ch, out_ch)
-        self.steer_decoder = decoder.simple_Decoder(window_size*hid_ch*2, window_size*hid_ch, out_ch)
-        self.throttle_decoder = decoder.simple_Decoder(window_size*hid_ch*2, window_size*hid_ch, out_ch)
+        self.brake_decoder = decoder.Simple_Decoder(window_size*hid_ch*2 ,window_size*hid_ch, out_ch)
+        self.steer_decoder = decoder.Simple_Decoder(window_size*hid_ch*2, window_size*hid_ch, out_ch)
+        self.throttle_decoder = decoder.Simple_Decoder(window_size*hid_ch*2, window_size*hid_ch, out_ch)
 
-        self.mlp = decoder.simple_MLP(out_ch, 2)
+        self.mlp = decoder.Simple_MLP(out_ch, 2)
 
     
 

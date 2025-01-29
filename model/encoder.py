@@ -6,7 +6,7 @@ from utils.utils import split_tensor
 
 
 # basic structure of Resnet block
-class ResBasicBlock(nn.modules):
+class ResBasicBlock(nn.Module):
     def __init__(self, in_ch, out_ch, stride=1):
 
         super(ResBasicBlock, self).__init__()
@@ -27,6 +27,7 @@ class ResBasicBlock(nn.modules):
 
     def forward(self, input):
         identity = input
+        print(input.shape)
         output1 = self.cbl1(input)
         output2 = self.cbl2(output1)
         output = output2 + identity
@@ -37,7 +38,7 @@ class ResBasicBlock(nn.modules):
 
 
 # encoder to process splited data
-class Res_encoder(nn.modules):
+class Res_encoder(nn.Module):
     def __init__(self, in_ch=1, out_ch=3, window_size=15, step=5):
         super(Res_encoder, self).__init__()
         self.window_size = 15
@@ -47,7 +48,7 @@ class Res_encoder(nn.modules):
         self.ResBlock2 = ResBasicBlock(out_ch, out_ch)
         self.ResBlock3 = ResBasicBlock(out_ch, out_ch)
 
-        self.lstm = nn.LSTM(window_size*out_ch,window_size*out_ch*2,num_layers=2,batch_first=True)
+        self.lstm = nn.LSTM(window_size*out_ch,window_size*out_ch*2,num_layers=2)
         
 
     def forward(self, input):
@@ -57,6 +58,7 @@ class Res_encoder(nn.modules):
         output = self.ResBlock3(output)
         # output [L,3]
         splited_output = split_tensor(output, self.window_size, self.step)
+        print("splited_output: " + str(splited_output.shape))
         # splited_output [N,15*3]
         output, (hn, cn) = self.lstm(splited_output)
         # output [N, 15*3*2]

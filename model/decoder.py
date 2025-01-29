@@ -5,9 +5,9 @@ import numpy as np
 
 
 
-class simple_MLP(nn.modules):
+class Simple_MLP(nn.Module):
     def __init__(self, in_ch, out_ch): 
-        super(simple_MLP, self).__init__()
+        super(Simple_MLP, self).__init__()
 
         self.ln = nn.Linear(in_ch, out_ch)
         self.bn = nn.BatchNorm1d(out_ch)
@@ -23,12 +23,12 @@ class simple_MLP(nn.modules):
     
 
 
-class simple_Decoder(nn.modules):
+class Simple_Decoder(nn.Module):
     def __init__(self, in_ch, hid_ch, out_ch):
-        super(simple_Decoder, self).__init__()
+        super(Simple_Decoder, self).__init__()
 
-        self.mlp1 = simple_MLP(in_ch, hid_ch)
-        self.mlp2 = simple_MLP(hid_ch, out_ch)
+        self.mlp1 = Simple_MLP(in_ch, hid_ch)
+        self.mlp2 = Simple_MLP(hid_ch, out_ch)
 
     
     def forward(self, input):

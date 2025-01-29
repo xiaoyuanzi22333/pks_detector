@@ -58,6 +58,7 @@ class simulator_dataset():
         brake_sequence = []
         steer_sequence = []
         throttle_sequence = []
+        self.label = []
         raw_dataset = simulator_getter(data_path)
         for brake_data, steer_data, throttle_data, label in raw_dataset:
             brake_sequence.append(torch.from_numpy(brake_data))
@@ -79,6 +80,10 @@ class simulator_dataset():
         label = self.label[index]
 
         return padded_brake, padded_steer, padded_throttle, self.mask, label
+    
+
+    def __len__(self):
+        return len(self.label)
 
 
 

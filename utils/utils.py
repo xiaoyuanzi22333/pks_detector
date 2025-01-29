@@ -13,9 +13,23 @@ def split_ndarray(input, length=15, step=5):
 
 
 def split_tensor(input_tensor, length=15, step=5):
-    num_splits = (input_tensor.size(0) - length) // step + 1
-    split = [input_tensor[i:i + length].view(-1) for i in range(0, num_splits * step, step)]
-    return torch.stack(split)
+    # 计算可以提取的切片数量
+    num_slices = (input_tensor.size(2) - length) // step + 1
+
+    # 创建一个列表来存储切片
+    slices = []
+
+    # 提取切片
+    for i in range(num_slices):
+        start_index = i * step
+        end_index = start_index + length
+        slices.append(input_tensor[:, :, start_index:end_index])
+
+    # 将切片列表转换为 Tensor
+    slices_tensor = torch.stack(slices)
+    slices_tensor = slices_tensor.reshape(slices_tensor.shape[0],slices_tensor.shape[1],-1)
+
+    return slices_tensor
 
 
 def train_mask():
