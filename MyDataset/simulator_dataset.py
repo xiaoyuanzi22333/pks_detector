@@ -2,8 +2,10 @@ import torch
 import numpy as np
 import os
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import Dataset
 
-class simulator_getter():
+
+class simulator_getter(Dataset):
     # data_path = './DATA
     # src_folder = './DATA/normal_test_
     # src_file = './DATA/normal_test_/2025_01_09
@@ -78,8 +80,9 @@ class simulator_dataset():
         padded_steer = self.padded_steer_seq[index]
         padded_throttle = self.padded_throttle_seq[index]
         label = self.label[index]
+        mask = self.mask[index]
 
-        return padded_brake, padded_steer, padded_throttle, self.mask, label
+        return padded_brake, padded_steer, padded_throttle, mask, label
     
 
     def __len__(self):

@@ -27,7 +27,7 @@ class ResBasicBlock(nn.Module):
 
     def forward(self, input):
         identity = input
-        print(input.shape)
+        # print(input.shape)
         output1 = self.cbl1(input)
         output2 = self.cbl2(output1)
         output = output2 + identity
@@ -58,7 +58,7 @@ class Res_encoder(nn.Module):
         output = self.ResBlock3(output)
         # output [L,3]
         splited_output = split_tensor(output, self.window_size, self.step)
-        print("splited_output: " + str(splited_output.shape))
+        # print("splited_output: " + str(splited_output.shape))
         # splited_output [N,15*3]
         output, (hn, cn) = self.lstm(splited_output)
         # output [N, 15*3*2]
