@@ -15,8 +15,8 @@ cuda_device = 0
 data_path = './Data'
 batch_size = 4
 num_epoch = 50
-record_dir = './logs'
-model_path = './model_saved'
+record_dir = './logs_01'
+model_path = './model_saved_01'
 
 
 

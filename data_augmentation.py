@@ -55,8 +55,8 @@ def data_add_noise(src_folder, tgt_folder):
 
         # 逆 FFT 变换回时域
         filtered_noise = np.fft.ifft(filtered_fft_noise).real  # 取实部，得到带通噪声
-        simulated_steer = src_steer + 0.01 * filtered_noise  # 设置抖动的振幅
-        simulated_throttle = src_throttle + 0.01 * filtered_noise
+        simulated_steer = src_steer + 0.1 * filtered_noise  # 设置抖动的振幅
+        simulated_throttle = src_throttle + 0.1 * filtered_noise
         simulated_throttle = [0 if i < 0 else i for i in simulated_throttle]
         simulated_brake = src_brake
         
@@ -66,7 +66,15 @@ def data_add_noise(src_folder, tgt_folder):
         
 
 
-def visulize_noise_data(t, src, simulated):
+def visulize_noise_data(src, simulated):
+    src = src + "/2025_01_09_19-34-02/steer_data.npy"
+    simulated = simulated + "/2025_01_09_19-34-02/steer_data.npy"
+    src = np.load(src)
+    simulated = np.load(simulated)
+    t = np.linspace(0,1, len(src))
+    print(len(t))
+    print(len(src))
+    
     # 绘制原始方向盘数据
     plt.figure(figsize=(12, 6))
     plt.plot(t, src, label="Normal Steering Data", alpha=0.7)
@@ -86,6 +94,19 @@ def visulize_noise_data(t, src, simulated):
 
 
 if __name__ == "__main__":
+    # src_folder = "./Data/normal_test_left"
+    # tgt_folder = "./Data/abnormal_test_left"
+    # data_add_noise(src_folder, tgt_folder)
+    # src_folder = "./Data/normal_test_right"
+    # tgt_folder = "./Data/abnormal_test_right"
+    # data_add_noise(src_folder, tgt_folder)
+    # src_folder = "./Data/normal_test_left_gen"
+    # tgt_folder = "./Data/abnormal_test_left_gen"
+    # data_add_noise(src_folder, tgt_folder)
+    # src_folder = "./Data/normal_test_right_gen"
+    # tgt_folder = "./Data/abnormal_test_right_gen"
+    # data_add_noise(src_folder, tgt_folder)
+    
     src_folder = "./Data/normal_test_left"
-    tgt_folder = "./Data/abnormal_test_right_gen"
-    data_add_noise(src_folder, tgt_folder)
+    tgt_folder = "./Data/abnormal_test_left"
+    visulize_noise_data(src_folder, tgt_folder)
