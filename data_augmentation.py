@@ -91,6 +91,29 @@ def visulize_noise_data(src, simulated):
 
 
 
+def split_data_seconds(src, target, split_time):
+    if not os.path.exists(target):
+        os.mkdir(target)
+    for folder_class in os.listdir(src):
+        tgt_folder = os.path.join(target, folder_class)
+        if not os.path.exists(tgt_folder):
+            os.mkdir(tgt_folder)
+        for sample in os.listdir(os.path.join(src, folder_class)):
+            src_file = os.path.join(src, folder_class, sample)
+            tgt_file = os.path.join(target, folder_class, sample)
+            brake_data = np.load(os.path.join(src_file, 'brake_data.npy'))
+            steer_data = np.load(os.path.join(src_file, 'steer_data.npy'))
+            throttle_data = np.load(os.path.join(src_file, 'throttle_data.npy'))
+            fs = 30
+            for i in range(0, len(brake_data), fs*2):
+                if not os.path.exists(tgt_file + str(i)):
+                    os.mkdir(tgt_file + str(i))
+                np.save(os.path.join(tgt_file + str(i), 'brake_data.npy'), brake_data[i:i+fs*split_time])
+                np.save(os.path.join(tgt_file + str(i), 'steer_data.npy'), steer_data[i:i+fs*split_time])
+                np.save(os.path.join(tgt_file + str(i), 'throttle_data.npy'), throttle_data[i:i+fs*split_time])
+                
+                
+                
 
 
 if __name__ == "__main__":
@@ -107,6 +130,10 @@ if __name__ == "__main__":
     # tgt_folder = "./Data/abnormal_test_right_gen"
     # data_add_noise(src_folder, tgt_folder)
     
-    src_folder = "./Data/normal_test_left"
-    tgt_folder = "./Data/abnormal_test_left"
-    visulize_noise_data(src_folder, tgt_folder)
+    # src_folder = "./Data/normal_test_left"
+    # tgt_folder = "./Data/abnormal_test_left"
+    # visulize_noise_data(src_folder, tgt_folder)
+    
+    src_folder = './Data'
+    tgt_folder = './Data_5s'
+    split_data_seconds(src_folder, tgt_folder, 5)
