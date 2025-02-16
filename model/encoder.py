@@ -27,7 +27,8 @@ class ResBasicBlock(nn.Module):
 
     def forward(self, input):
         identity = input
-        # print(input.shape)
+        print("input encoder")
+        print(input.shape)
         output1 = self.cbl1(input)
         output2 = self.cbl2(output1)
         output = output2 + identity

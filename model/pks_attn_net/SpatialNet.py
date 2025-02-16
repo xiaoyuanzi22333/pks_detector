@@ -17,7 +17,7 @@ class SpatialNet(nn.Module):
         self.steer_mlp_2 = Simple_MLP(hid_ch, out_ch)
         self.throttle_mlp_2 = Simple_MLP(hid_ch, out_ch)
         
-        self.cross_modal_attn = MultiModalModel(embed_dim=hid_ch, num_heads=1)
+        self.cross_modal_attn = MultiModalModel(embed_dim=out_ch, num_heads=1)
 
     def forward(self, brake, steer, throotle):
         # input [batchsize, L, 1]
@@ -30,9 +30,11 @@ class SpatialNet(nn.Module):
         output_throttle = self.throttle_mlp_1(throotle)
         output_throttle = self.throttle_mlp_2(output_throttle)
         # output [batchsize, outch, 1]
-        
+
         fused_1, fused_2, fused_3 = self.cross_modal_attn(output_brake, output_steer, output_throttle)
-        return fused_1, fused_2, fused_3
+        output = (fused_1+fused_2+fused_3)
+
+        return output
         
 
 

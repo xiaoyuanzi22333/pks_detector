@@ -13,21 +13,31 @@ def split_ndarray(input, length=15, step=5):
     return np.array(split)
 
 
-def split_tensor(input_tensor, length=15, step=5):
-    # 这个针对torch.Tensor
-    num_slices = (input_tensor.size(2) - length) // step + 1
-
+def split_tensor(input_tensor, length=30, step=15):
+    # input_tensor 的形状为 (batch_size, width)
+    batch_size, width = input_tensor.size()
+    # 计算切片数量
+    num_slices = (width - length) // step + 1
     # 创建一个列表来存储切片
     slices = []
-
     # 提取切片
     for i in range(num_slices):
         start_index = i * step
         end_index = start_index + length
-        slices.append(input_tensor[:, :, start_index:end_index])
-
+        slices.append(input_tensor[:, start_index:end_index])
     # 将切片列表转换为 Tensor
     slices_tensor = torch.stack(slices)
-    slices_tensor = slices_tensor.reshape(slices_tensor.shape[0],slices_tensor.shape[1],-1)
+    slices_tensor = slices_tensor.permute(1,0,2)
+    return slices_tensor  # 输出形状为 (num_slices, batch_size, length)
 
-    return slices_tensor
+
+if __name__ == "__main__":
+        # 示例
+    batch_size = 4
+    width = 100
+    input_tensor = torch.randn(batch_size, width)
+
+    # 调用函数
+    output_tensor = split_tensor(input_tensor)
+
+    print("输出形状:", output_tensor.shape)  # 应输出 (num_slices, batch_size, length)

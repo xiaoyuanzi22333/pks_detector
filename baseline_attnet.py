@@ -14,7 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 cuda_device = 0
-data_path = './Data'
+data_path = './Data_10s'
 batch_size = 4
 num_epoch = 50
 record_dir = './logs_01'
@@ -25,22 +25,22 @@ model_path = './model_saved_01'
 def train():
     print("============start training============")
     dataset = simulator_dataset(data_path)
-    train_dataset, test_dataset = generate_split_dataset(dataset)
+    train_dataset, test_dataset = generate_split_dataset(dataset, True)
     # exit()
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    model_spatial = SpatialNet(1,4,1).cuda()
-    model_temporal = TemporalNet(1,[2,1],1).cuda()
-    model_decoder = AtNet_decoder(1,4,2).cuda()
+    model_spatial = SpatialNet(300,500,300).cuda()
+    model_temporal = TemporalNet(30,[45,60],300,5).cuda()
+    model_decoder = AtNet_decoder(300,150,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
-    optimizer = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.5, 0.999))
-    optimizer = optim.Adam(model_temporal.parameters(),lr = 1e-4, betas = (0.5, 0.999))
-    optimizer = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.5, 0.999))
+    optimizer_spatial = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.5, 0.999))
+    optimizer_temporal = optim.Adam(model_temporal.parameters(),lr = 1e-4, betas = (0.5, 0.999))
+    optimizer_decoder = optim.Adam(model_decoder.parameters(),lr = 1e-4, betas = (0.5, 0.999))
     loss = nn.CrossEntropyLoss()
 
-    recoder = SummaryWriter(log_dir=record_dir)
+    # recoder = SummaryWriter(log_dir=record_dir)
 
     for epoch in range(num_epoch):
         model_spatial.train()
@@ -49,26 +49,34 @@ def train():
         print("training on epoch: ", epoch)
 
         for i, batch_data in enumerate(tqdm(train_loader)):
-            brake = batch_data[0].unsqueeze(1).to(cuda_device).float()
-            steer = batch_data[1].unsqueeze(1).to(cuda_device).float()
-            throttle = batch_data[2].unsqueeze(1).to(cuda_device).float()
-            label = batch_data[4].unsqueeze(1).to(cuda_device).float()
+            brake = batch_data[0].to(cuda_device).float()
+            steer = batch_data[1].to(cuda_device).float()
+            throttle = batch_data[2].to(cuda_device).float()
+            label = batch_data[4].to(cuda_device).float()
 
-            spatial_1, spatial_2, spatial_3 = model_spatial(brake, steer, throttle)
-            temp_1, temp_2, temp_3 = model_temporal(brake, steer, throttle)
+            spatial_output = model_spatial(brake, steer, throttle)
+            temp_output = model_temporal(brake, steer, throttle)
+
+            fused_output = spatial_output + temp_output
+            pred_output = model_decoder(fused_output)
+
+            print("pred_output: " + str(pred_output.shape))            
+            
             # print("pred_output: " + str(pred_output.shape)) 
             # print(pred_output)
-            label = label.squeeze().long()
+            label = label.long()
             # print(label.shape)
+            norm_loss = loss(pred_output, label)
 
-            
-            mask_loss = loss(pred_output, label)
-
-            final_loss = mask_loss * mask
-            norm_loss = final_loss.sum() / mask.sum() # 归一化处理
-            optimizer.zero_grad()
+            optimizer_spatial.zero_grad()
+            optimizer_temporal.zero_grad()
+            optimizer_decoder.zero_grad()
             norm_loss.backward()
-            optimizer.step()
+            optimizer_spatial.step()
+            optimizer_temporal.step()
+            optimizer_decoder.step()
+
+            print("finish one batch")
 
         recoder.add_scalar('norm_Loss/train', norm_loss.item(), epoch)
         # recoder.add_scalar('Loss/train', loss.item(), epoch)
@@ -96,18 +104,20 @@ def test(model, test_dataset):
 
     with torch.no_grad():
         for batch_data in test_loader:
-            brake = batch_data[0].unsqueeze(1).to(cuda_device).float()
-            steer = batch_data[1].unsqueeze(1).to(cuda_device).float()
-            throttle = batch_data[2].unsqueeze(1).to(cuda_device).float()
-            mask = batch_data[3].unsqueeze(1).to(cuda_device).float()
-            label = batch_data[4].unsqueeze(1).to(cuda_device).float()
+            brake = batch_data[0]to(cuda_device).float()
+            steer = batch_data[1]to(cuda_device).float()
+            throttle = batch_data[2]to(cuda_device).float()
+            label = batch_data[4]to(cuda_device).float()
 
             # 模型前向传播
-            pred_output = model(brake, steer, throttle)
+            spatial_output = model_spatial(brake, steer, throttle)
+            temp_output = model_temporal(brake, steer, throttle)
+            fused_output = spatial_output + temp_output
+            pred_output = model_decoder(fused_output)
 
             # 获取预测的类别
             pred_class = pred_output.argmax(dim=1)  # 获取预测类别（取概率最大值的索引）
-            label = label.squeeze().long()          # 目标标签
+            label = label.long()          # 目标标签
             
             correct += (pred_class == label).sum().item()
             # print(correct)
@@ -115,7 +125,6 @@ def test(model, test_dataset):
 
         accuracy = correct / total
         return accuracy
-
 
 
 
