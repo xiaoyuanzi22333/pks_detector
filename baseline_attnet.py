@@ -17,7 +17,7 @@ fs = 30
 time_split = 5
 cuda_device = 0
 data_path = './Data_' +str(time_split) + 's'
-batch_size = 4
+batch_size = 64
 num_epoch = 50
 record_dir = './logs_' +str(time_split) + 's_03'
 model_path = './model_saved_' +str(time_split) + 's_03'
@@ -51,8 +51,8 @@ def train():
         print("training on epoch: ", epoch)
 
         for i, batch_data in enumerate(tqdm(train_loader)):
-            if batch_data[0].shape[0] != batch_size:
-                continue
+            # if batch_data[0].shape[0] != batch_size:
+            #     continue
             
             brake = batch_data[0].to(cuda_device).float()
             steer = batch_data[1].to(cuda_device).float()
@@ -116,8 +116,8 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
 
     with torch.no_grad():
         for batch_data in test_loader:
-            if batch_data[0].shape[0] != batch_size:
-                continue
+            # if batch_data[0].shape[0] != batch_size:
+            #     continue
             brake = batch_data[0].to(cuda_device).float()
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()

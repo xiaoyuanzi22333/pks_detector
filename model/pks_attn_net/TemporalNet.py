@@ -48,9 +48,9 @@ class TemporalNet(nn.Module):
         # 输入交叉注意力模型
         fused_1, fused_2, fused_3 = self.cross_modal_attn(output_brake, output_steer, output_throttle)
         # fused_n [batchsize, 5. hid_ch[-1]]
-        fused_1 = fused_1.view(4,-1)
-        fused_2 = fused_2.view(4,-1)
-        fused_3 = fused_3.view(4,-1)
+        fused_1 = fused_1.view(fused_1.shape[0],-1)
+        fused_2 = fused_2.view(fused_2.shape[0],-1)
+        fused_3 = fused_3.view(fused_3.shape[0],-1)
         fused = (fused_1+fused_2+fused_3)
 
         output = self.mlp(fused)
