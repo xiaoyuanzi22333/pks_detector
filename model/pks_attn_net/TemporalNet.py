@@ -28,8 +28,8 @@ class TemporalNet(nn.Module):
         brake = brake.permute(0, 2, 1)
         steer = steer.permute(0, 2, 1)
         throotle = throotle.permute(0, 2, 1)
-        print("steer shape")
-        print(steer.shape)
+        # print("steer shape")
+        # print(steer.shape)
         # output [batchsize, 30, seq_len(10)]
         
         # 送入tcn
@@ -37,11 +37,12 @@ class TemporalNet(nn.Module):
         output_steer = self.tcn(steer)
         output_throttle = self.tcn(throotle)
         # output [batchsize, hid_ch[-1], seq_len(10)]
-        print( "output steer shape" + str(output_brake.shape))
+        
 
         output_brake = output_brake.permute(0,2,1)[:,-self.catch:,:]
         output_steer = output_steer.permute(0,2,1)[:,-self.catch:,:]
         output_throttle = output_throttle.permute(0,2,1)[:,-self.catch:,:]
+        # print( "output steer shape: " + str(output_brake.shape))
         
         # output [batchsize, 5, hid_ch[-1]]
         # 输入交叉注意力模型

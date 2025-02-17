@@ -67,11 +67,11 @@ def data_add_noise(src_folder, tgt_folder):
 
 
 def visulize_noise_data(src, simulated):
-    src = src + "/2025_01_09_19-34-02/steer_data.npy"
-    simulated = simulated + "/2025_01_09_19-34-02/steer_data.npy"
+    src = src + "/steer_data.npy"
+    simulated = simulated + "/steer_data.npy"
     src = np.load(src)
     simulated = np.load(simulated)
-    t = np.linspace(0,1, len(src))
+    t = np.linspace(0,10, len(src))
     print(len(t))
     print(len(src))
     
@@ -130,10 +130,10 @@ if __name__ == "__main__":
     # tgt_folder = "./Data/abnormal_test_right_gen"
     # data_add_noise(src_folder, tgt_folder)
     
-    # src_folder = "./Data/normal_test_left"
-    # tgt_folder = "./Data/abnormal_test_left"
-    # visulize_noise_data(src_folder, tgt_folder)
+    src_folder = "./Data_10s/normal_test_left_gen/2025_01_06_19-13-470"
+    tgt_folder = "./Data_10s/abnormal_test_left_gen/2025_01_06_19-13-470"
+    visulize_noise_data(src_folder, tgt_folder)
     
-    src_folder = './Data'
-    tgt_folder = './Data_5s'
-    split_data_seconds(src_folder, tgt_folder, 5)
+    # src_folder = './Data'
+    # tgt_folder = './Data_5s'
+    # split_data_seconds(src_folder, tgt_folder, 5)

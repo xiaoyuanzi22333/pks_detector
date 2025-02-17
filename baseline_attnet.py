@@ -13,12 +13,14 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+fs = 30
+time_split = 5
 cuda_device = 0
-data_path = './Data_10s'
+data_path = './Data_' +str(time_split) + 's'
 batch_size = 4
 num_epoch = 50
-record_dir = './logs_01'
-model_path = './model_saved_01'
+record_dir = './logs_' +str(time_split) + 's_03'
+model_path = './model_saved_' +str(time_split) + 's_03'
 
 
 
@@ -30,17 +32,17 @@ def train():
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    model_spatial = SpatialNet(300,500,300).cuda()
-    model_temporal = TemporalNet(30,[45,60],300,5).cuda()
-    model_decoder = AtNet_decoder(300,150,2).cuda()
+    model_spatial = SpatialNet(time_split*fs,400,time_split*fs).cuda()
+    model_temporal = TemporalNet(30,[25,30],time_split*fs,5).cuda()
+    model_decoder = AtNet_decoder(time_split*fs,150,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
-    optimizer_spatial = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.5, 0.999))
-    optimizer_temporal = optim.Adam(model_temporal.parameters(),lr = 1e-4, betas = (0.5, 0.999))
-    optimizer_decoder = optim.Adam(model_decoder.parameters(),lr = 1e-4, betas = (0.5, 0.999))
+    optimizer_spatial = optim.Adam(model_spatial.parameters(),lr = 1e-5, betas = (0.5, 0.999))
+    optimizer_temporal = optim.Adam(model_temporal.parameters(),lr = 1e-5, betas = (0.5, 0.999))
+    optimizer_decoder = optim.Adam(model_decoder.parameters(),lr = 1e-5, betas = (0.5, 0.999))
     loss = nn.CrossEntropyLoss()
 
-    # recoder = SummaryWriter(log_dir=record_dir)
+    recoder = SummaryWriter(log_dir=record_dir)
 
     for epoch in range(num_epoch):
         model_spatial.train()
@@ -49,10 +51,14 @@ def train():
         print("training on epoch: ", epoch)
 
         for i, batch_data in enumerate(tqdm(train_loader)):
+            if batch_data[0].shape[0] != batch_size:
+                continue
+            
             brake = batch_data[0].to(cuda_device).float()
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
+            # print("brake shape" + str(brake.shape))
 
             spatial_output = model_spatial(brake, steer, throttle)
             temp_output = model_temporal(brake, steer, throttle)
@@ -60,7 +66,7 @@ def train():
             fused_output = spatial_output + temp_output
             pred_output = model_decoder(fused_output)
 
-            print("pred_output: " + str(pred_output.shape))            
+            # print("pred_output: " + str(pred_output.shape))            
             
             # print("pred_output: " + str(pred_output.shape)) 
             # print(pred_output)
@@ -76,13 +82,13 @@ def train():
             optimizer_temporal.step()
             optimizer_decoder.step()
 
-            print("finish one batch")
+            # print("finish one batch")
 
         recoder.add_scalar('norm_Loss/train', norm_loss.item(), epoch)
         # recoder.add_scalar('Loss/train', loss.item(), epoch)
         print("testing")
-        accuracy_train = test(model, train_dataset)
-        accuracy_test = test(model, test_dataset)
+        accuracy_train = test(model_spatial, model_temporal, model_decoder, train_dataset)
+        accuracy_test = test(model_spatial, model_temporal, model_decoder, test_dataset)
         recoder.add_scalar('accuracy/trainset', accuracy_train, epoch)
         recoder.add_scalar('accuracy/testset', accuracy_test, epoch)
         
@@ -90,24 +96,32 @@ def train():
         if (epoch+1)%5 == 0:
             if not os.path.exists(model_path):
                 os.mkdir(model_path)
-            torch.save(model.state_dict(), model_path + '/pksNet_epoch_' + str(epoch+1) + '.pth')
+            torch.save(model_spatial.state_dict(), model_path + '/spatial_epoch_' + str(epoch+1) + '.pth')
+            torch.save(model_temporal.state_dict(), model_path + '/temporal_epoch_' + str(epoch+1) + '.pth')
+            torch.save(model_decoder.state_dict(), model_path + '/decoder_epoch_' + str(epoch+1) + '.pth')
 
 
 
 
-def test(model, test_dataset):
-    model.to(cuda_device)
-    model.eval()
+def test(model_spatial, model_temporal, model_decoder, test_dataset):
+    model_spatial.to(cuda_device)
+    model_spatial.eval()
+    model_temporal.to(cuda_device)
+    model_temporal.eval()
+    model_decoder.to(cuda_device)
+    model_decoder.eval()
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     correct = 0  # 累计预测正确的样本数
     total = 0    # 累计所有有效样本数
 
     with torch.no_grad():
         for batch_data in test_loader:
-            brake = batch_data[0]to(cuda_device).float()
-            steer = batch_data[1]to(cuda_device).float()
-            throttle = batch_data[2]to(cuda_device).float()
-            label = batch_data[4]to(cuda_device).float()
+            if batch_data[0].shape[0] != batch_size:
+                continue
+            brake = batch_data[0].to(cuda_device).float()
+            steer = batch_data[1].to(cuda_device).float()
+            throttle = batch_data[2].to(cuda_device).float()
+            label = batch_data[4].to(cuda_device).float()
 
             # 模型前向传播
             spatial_output = model_spatial(brake, steer, throttle)
