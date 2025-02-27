@@ -2,3 +2,5 @@ Data*
 __pycache__
 logs*
 model_saved*
+.history
+plots

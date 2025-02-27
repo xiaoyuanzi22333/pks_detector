@@ -1,6 +1,9 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+import time
+
 
 def data_reverse(src_folders, tgt_folders):
     if not os.path.exists(tgt_folders):
@@ -86,12 +89,14 @@ def visulize_noise_data(src, simulated):
     plt.xlabel("Time (s)")
     plt.ylabel("Steering Angle")
     plt.title("Steering Data with Parkinson Tremor Noise")
-    plt.legend()
-    plt.show()
+    save_path = f'plots/steering_plot_{int(time.time())}.png'
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight', format='png')
+    plt.close()
 
 
 
-def split_data_seconds(src, target, split_time):
+def split_data_seconds(src, target, split_time, interval_time):
     if not os.path.exists(target):
         os.mkdir(target)
     for folder_class in os.listdir(src):
@@ -105,7 +110,7 @@ def split_data_seconds(src, target, split_time):
             steer_data = np.load(os.path.join(src_file, 'steer_data.npy'))
             throttle_data = np.load(os.path.join(src_file, 'throttle_data.npy'))
             fs = 30
-            for i in range(0, len(brake_data), fs*2):
+            for i in range(0, len(brake_data), fs*interval_time):
                 if not os.path.exists(tgt_file + str(i)):
                     os.mkdir(tgt_file + str(i))
                 np.save(os.path.join(tgt_file + str(i), 'brake_data.npy'), brake_data[i:i+fs*split_time])
@@ -130,10 +135,12 @@ if __name__ == "__main__":
     # tgt_folder = "./Data/abnormal_test_right_gen"
     # data_add_noise(src_folder, tgt_folder)
     
-    src_folder = "./Data_10s/normal_test_left_gen/2025_01_06_19-13-470"
-    tgt_folder = "./Data_10s/abnormal_test_left_gen/2025_01_06_19-13-470"
+    src_folder = "./Data_3s_1s/normal_test_left/2025_01_09_19-38-30120"
+    tgt_folder = "./Data_3s_1s/abnormal_test_left/2025_01_09_19-38-30120"
     visulize_noise_data(src_folder, tgt_folder)
     
+    # time_split = 3
+    # time_interval = 1
     # src_folder = './Data'
-    # tgt_folder = './Data_5s'
-    # split_data_seconds(src_folder, tgt_folder, 5)
+    # tgt_folder = './Data_'+str(time_split)+'s_'+str(time_interval)+'s'
+    # split_data_seconds(src_folder, tgt_folder, time_split, time_interval)

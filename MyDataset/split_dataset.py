@@ -7,9 +7,10 @@ import json
 
 
 
-def generate_split_dataset(dataset, new=False):
+def generate_split_dataset(dataset,time_split, time_interval, new=False):
     length = len(dataset)
-    if not os.path.exists("dataset_split_indices.json") or new:
+    json_file = "dataset_split_indices" +str(time_split) + 's_' + str(time_interval) + 's'+".json"
+    if not os.path.exists(json_file) or new:
         # 创建全新的索引
         train_size = int(0.85 * length)
         test_size = length - train_size
@@ -21,7 +22,7 @@ def generate_split_dataset(dataset, new=False):
         print(f"trainset: {len(train_indices)}")
         print(f"testset : {len(test_indices)}")
         
-        with open("dataset_split_indices.json", "w") as f:
+        with open(json_file, "w") as f:
             json.dump({"train_indices": train_indices, 
                 "test_indices": test_indices}, f)
         
@@ -30,7 +31,7 @@ def generate_split_dataset(dataset, new=False):
     else:
         # 加载保存的索引
         try:
-            with open("dataset_split_indices.json", "r") as f:
+            with open(json_file, "r") as f:
                 indices = json.load(f)
         except:
             return generate_split_dataset(dataset, True)

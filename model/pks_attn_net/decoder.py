@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from ..decoder import Simple_MLP
+from ..decoder_old import Simple_MLP
 
 
 class AtNet_decoder(nn.Module):

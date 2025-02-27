@@ -1,43 +1,46 @@
 import os
 import numpy as np
-from MyDataset.simulator_dataset import simulator_dataset
-from MyDataset.split_dataset import generate_split_dataset
-import utils.utils as utils
+import sys
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(base_dir)
+from pks_detector.MyDataset.simulator_dataset import simulator_dataset
+from pks_detector.MyDataset.split_dataset import generate_split_dataset
+import pks_detector.utils.utils as utils
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from model.pks_attn_net.SpatialNet import SpatialNet
-from model.pks_attn_net.TemporalNet import TemporalNet
-from model.pks_attn_net.decoder import AtNet_decoder
+from pks_detector.model.pks_attn_net.SpatialNet import SpatialNet
+from pks_detector.model.pks_attn_net.TemporalNet import TemporalNet
+from pks_detector.model.pks_attn_net.decoder import AtNet_decoder
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-exp_name = "0227_13"
+exp_name = "0226_03"
 fs = 30
 time_split = 3
-time_interval = 2
+time_interval = 1
 cuda_device = 0
 data_path = './Data_' +str(time_split) + 's_' + str(time_interval) + 's'
 batch_size = 32
 num_epoch = 90
 record_dir = './logs/logs_' +str(time_split) + 's_' + exp_name
 model_path = './model_saves/model_saved_' +str(time_split) + 's_' + exp_name
-use_scheduler = True
+use_scheduler = False
 scheduler_step = 60
 
 
 def train():
     print("============start training============")
     dataset = simulator_dataset(data_path)
-    train_dataset, test_dataset = generate_split_dataset(dataset,time_split, time_interval, False)
+    train_dataset, test_dataset = generate_split_dataset(dataset, False)
     # exit()
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    model_spatial = SpatialNet(time_split*fs,400,time_split*fs).cuda()
-    model_temporal = TemporalNet(30,[25,30],time_split*fs,5).cuda()
+    model_spatial = SpatialNet(time_split*fs,400,time_split*fs,2).cuda()
+    model_temporal = TemporalNet(30,[25,30],time_split*fs,5,2).cuda()
     model_decoder = AtNet_decoder(time_split*fs,150,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
@@ -72,10 +75,12 @@ def train():
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
+            
+            inputs = [steer, throttle]
             # print("brake shape" + str(brake.shape))
 
-            spatial_output = model_spatial(brake, steer, throttle)
-            temp_output = model_temporal(brake, steer, throttle)
+            spatial_output = model_spatial(inputs)
+            temp_output = model_temporal(inputs)
 
             fused_output = spatial_output + temp_output
             pred_output = model_decoder(fused_output)
@@ -141,10 +146,11 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
+            inputs = [steer, throttle]
 
             # 模型前向传播
-            spatial_output = model_spatial(brake, steer, throttle)
-            temp_output = model_temporal(brake, steer, throttle)
+            spatial_output = model_spatial(inputs)
+            temp_output = model_temporal(inputs)
             fused_output = spatial_output + temp_output
             pred_output = model_decoder(fused_output)
 

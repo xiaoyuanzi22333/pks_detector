@@ -6,7 +6,7 @@ import utils.utils as utils
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from model.pksNet import pksNet
+from model.pksNet_old import pksNet
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm

@@ -4,7 +4,7 @@ import numpy as np
 from .tcn import TemporalConvNet
 from .fusion import MultiModalModel
 from utils.utils import split_tensor
-from ..decoder import Simple_MLP
+from ..decoder_old import Simple_MLP
 
 
 class TemporalNet(nn.Module):
