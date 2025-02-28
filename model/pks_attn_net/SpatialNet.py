@@ -6,33 +6,34 @@ from .fusion import MultiModalModel
 
 
 class SpatialNet(nn.Module):
-    def __init__(self, in_ch, hid_ch, out_ch):
+    def __init__(self, in_ch, hid_ch, out_ch, num_chd):
         super(SpatialNet, self).__init__()
+        self.num_chd = num_chd
+        self.mlp_1 = nn.ModuleList([
+            Simple_MLP(in_ch, hid_ch) for _ in range(num_chd)
+        ])
         
-        self.chd1_mlp_1 = Simple_MLP(in_ch, hid_ch)
-        self.chd2_mlp_1 = Simple_MLP(in_ch, hid_ch)
-        self.chd3_mlp_1 = Simple_MLP(in_ch, hid_ch)
+        self.mlp_2 = nn.ModuleList([
+            Simple_MLP(hid_ch, out_ch) for _ in range(num_chd)
+        ])
         
-        self.chd1_mlp_2 = Simple_MLP(hid_ch, out_ch)
-        self.chd2_mlp_2 = Simple_MLP(hid_ch, out_ch)
-        self.chd3_mlp_2 = Simple_MLP(hid_ch, out_ch)
-        
-        self.cross_modal_attn = MultiModalModel(embed_dim=out_ch, num_heads=1)
+        self.cross_modal_attn = MultiModalModel(embed_dim=out_ch,num_chd=num_chd ,num_heads=1)
 
-    def forward(self, chd1, chd2, throotle):
+    def forward(self, inputs):
+        if len(inputs) != self.num_chd:
+            ValueError("input dimention not fits")
+            
         # input [batchsize, L, 1]
-        output_chd1 = self.chd1_mlp_1(chd1)
-        output_chd1 = self.chd1_mlp_2(output_chd1)
-        
-        output_chd2 = self.chd2_mlp_1(chd2)
-        output_chd2 = self.chd2_mlp_2(output_chd2)
-        
-        output_chd3 = self.chd3_mlp_1(throotle)
-        output_chd3 = self.chd3_mlp_2(output_chd3)
+        output_chds = []
+        for i in range(self.num_chd):
+            output = self.mlp_1[i](inputs[i])
+            output = self.mlp_2[i](output)
+            output_chds.append(output)
         # output [batchsize, outch, 1]
 
-        fused_1, fused_2, fused_3 = self.cross_modal_attn(output_chd1, output_chd2, output_chd3)
-        output = (fused_1+fused_2+fused_3)
+        fused_output = self.cross_modal_attn(output_chds)
+        output = sum(fused_output)
+        # [batch_size, L, out_ch]
 
         return output
         

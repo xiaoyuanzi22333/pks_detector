@@ -1,24 +1,29 @@
 import torch.nn as nn
 import torch
 import numpy as np
-
+from itertools import combinations
 
 class MultiModalModel(nn.Module):
-    def __init__(self, embed_dim, num_heads=1):
+    def __init__(self, embed_dim, num_chd, num_heads=1):
         super(MultiModalModel, self).__init__()
+        self.num_chd = num_chd
         # 每对模态使用一个独立的 Cross Attention
-        self.cross_attention_12 = nn.MultiheadAttention(embed_dim, num_heads)  # 模态 1 和 2
-        self.cross_attention_13 = nn.MultiheadAttention(embed_dim, num_heads)  # 模态 1 和 3
-        self.cross_attention_23 = nn.MultiheadAttention(embed_dim, num_heads)  # 模态 2 和 3
+        self.cross_attentions = nn.ModuleDict()
+        for i, j in combinations(range(num_chd), 2):  # Generate all unique pairs
+            self.cross_attentions[f"{i}_{j}"] = nn.MultiheadAttention(embed_dim, num_heads)
+        
 
-    def forward(self, brake, steer, throttle, mask=None):
-        fused_12, _ = self.cross_attention_12(brake, steer, steer, mask)
-        fused_13, _ = self.cross_attention_13(brake, throttle, throttle, mask)
-        fused_23, _ = self.cross_attention_23(steer, throttle, throttle, mask)
 
+    def forward(self, inputs, mask=None):
+        if len(inputs) != self.num_chd:
+            ValueError("input dimention not fits")
+
+        fused_outputs = [torch.zeros_like(inputs[i]) for i in range(self.num_chd)]
         # 最终融合
-        fused_1 = fused_12 + fused_13  # 模态 1 的最终融合
-        fused_2 = fused_12 + fused_23  # 模态 2 的最终融合
-        fused_3 = fused_13 + fused_23  # 模态 3 的最终融合
+        for i, j in combinations(range(self.num_chd), 2):
+            key = f"{i}_{j}"
+            fused_ij, _ = self.cross_attentions[key](inputs[i], inputs[j], inputs[j], mask)
+            fused_outputs[i] = fused_outputs[i] + fused_ij
+            fused_outputs[j] = fused_outputs[j] + fused_ij
 
-        return fused_1, fused_2, fused_3
+        return fused_outputs
