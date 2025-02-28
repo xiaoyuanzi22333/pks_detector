@@ -1,0 +1,195 @@
+loading params
+time_split    : 3
+time_interval : 1
+cuda_device   : 0
+data_path     : ./Data_3s_1s
+batch_size    : 32
+num_epoch     : 90
+record_dir    : ./logs/logs_3s_0227_27
+model_path    : ./model_saves/model_saved_3s_0227_27
+use_scheduler : True
+scheduler_step: 60
+============start training============
+trainset: 4994
+testset : 882
+Device: cuda:0
+training on epoch:  0
+testing
+training on epoch:  1
+testing
+training on epoch:  2
+testing
+training on epoch:  3
+testing
+training on epoch:  4
+testing
+training on epoch:  5
+testing
+training on epoch:  6
+testing
+training on epoch:  7
+testing
+training on epoch:  8
+testing
+training on epoch:  9
+testing
+training on epoch:  10
+testing
+training on epoch:  11
+testing
+training on epoch:  12
+testing
+training on epoch:  13
+testing
+training on epoch:  14
+testing
+training on epoch:  15
+testing
+training on epoch:  16
+testing
+training on epoch:  17
+testing
+training on epoch:  18
+testing
+training on epoch:  19
+testing
+training on epoch:  20
+testing
+training on epoch:  21
+testing
+training on epoch:  22
+testing
+training on epoch:  23
+testing
+training on epoch:  24
+testing
+training on epoch:  25
+testing
+training on epoch:  26
+testing
+training on epoch:  27
+testing
+training on epoch:  28
+testing
+training on epoch:  29
+testing
+training on epoch:  30
+testing
+training on epoch:  31
+testing
+training on epoch:  32
+testing
+training on epoch:  33
+testing
+training on epoch:  34
+testing
+training on epoch:  35
+testing
+training on epoch:  36
+testing
+training on epoch:  37
+testing
+training on epoch:  38
+testing
+training on epoch:  39
+testing
+training on epoch:  40
+testing
+training on epoch:  41
+testing
+training on epoch:  42
+testing
+training on epoch:  43
+testing
+training on epoch:  44
+testing
+training on epoch:  45
+testing
+training on epoch:  46
+testing
+training on epoch:  47
+testing
+training on epoch:  48
+testing
+training on epoch:  49
+testing
+training on epoch:  50
+testing
+training on epoch:  51
+testing
+training on epoch:  52
+testing
+training on epoch:  53
+testing
+training on epoch:  54
+testing
+training on epoch:  55
+testing
+training on epoch:  56
+testing
+training on epoch:  57
+testing
+training on epoch:  58
+testing
+training on epoch:  59
+testing
+training on epoch:  60
+testing
+training on epoch:  61
+testing
+training on epoch:  62
+testing
+training on epoch:  63
+testing
+training on epoch:  64
+testing
+training on epoch:  65
+testing
+training on epoch:  66
+testing
+training on epoch:  67
+testing
+training on epoch:  68
+testing
+training on epoch:  69
+testing
+training on epoch:  70
+testing
+training on epoch:  71
+testing
+training on epoch:  72
+testing
+training on epoch:  73
+testing
+training on epoch:  74
+testing
+training on epoch:  75
+testing
+training on epoch:  76
+testing
+training on epoch:  77
+testing
+training on epoch:  78
+testing
+training on epoch:  79
+testing
+training on epoch:  80
+testing
+training on epoch:  81
+testing
+training on epoch:  82
+testing
+training on epoch:  83
+testing
+training on epoch:  84
+testing
+training on epoch:  85
+testing
+training on epoch:  86
+testing
+training on epoch:  87
+testing
+training on epoch:  88
+testing
+training on epoch:  89
+testing

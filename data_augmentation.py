@@ -135,12 +135,12 @@ if __name__ == "__main__":
     # tgt_folder = "./Data/abnormal_test_right_gen"
     # data_add_noise(src_folder, tgt_folder)
     
-    src_folder = "./Data_3s_1s/normal_test_left/2025_01_09_19-38-30120"
-    tgt_folder = "./Data_3s_1s/abnormal_test_left/2025_01_09_19-38-30120"
-    visulize_noise_data(src_folder, tgt_folder)
+    # src_folder = "./Data_3s_1s/normal_test_left/2025_01_09_19-38-30120"
+    # tgt_folder = "./Data_3s_1s/abnormal_test_left/2025_01_09_19-38-30120"
+    # visulize_noise_data(src_folder, tgt_folder)
     
-    # time_split = 3
-    # time_interval = 1
-    # src_folder = './Data'
-    # tgt_folder = './Data_'+str(time_split)+'s_'+str(time_interval)+'s'
-    # split_data_seconds(src_folder, tgt_folder, time_split, time_interval)
+    time_split = 3
+    time_interval = 1
+    src_folder = './Data'
+    tgt_folder = './Data_'+str(time_split)+'s_'+str(time_interval)+'s'
+    split_data_seconds(src_folder, tgt_folder, time_split, time_interval)

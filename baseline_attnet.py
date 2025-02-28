@@ -13,19 +13,43 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+import argparse
 
-exp_name = "0227_13"
+
+parser = argparse.ArgumentParser(description="load parsers")
+parser.add_argument('--pth', type=str, default= "0000_00", help='log/model path')
+parser.add_argument('--scl', type=int, default= 0, help='use scheduler')
+parser.add_argument('--time_split', type=int, default= 3)
+parser.add_argument('--time_interval', type=int,default= 1)
+parser.add_argument('--batch_size', type=int,default= 32)
+parser.add_argument('--epoch', type=int, default = 90)
+parser.add_argument('--scl_step', type=int, default=60)
+args = parser.parse_args()
+
+print("loading params")
+exp_name = args.pth
 fs = 30
-time_split = 3
-time_interval = 2
+time_split = args.time_split
+time_interval = args.time_interval
 cuda_device = 0
 data_path = './Data_' +str(time_split) + 's_' + str(time_interval) + 's'
-batch_size = 32
-num_epoch = 90
+batch_size = args.batch_size
+num_epoch = args.epoch
 record_dir = './logs/logs_' +str(time_split) + 's_' + exp_name
 model_path = './model_saves/model_saved_' +str(time_split) + 's_' + exp_name
-use_scheduler = True
-scheduler_step = 60
+use_scheduler = False if args.scl==0 else True
+scheduler_step = args.scl_step
+
+print("time_split    : "  + str(time_split))
+print("time_interval : "  + str(time_interval))
+print("cuda_device   : "  + str(cuda_device))
+print("data_path     : "  + str(data_path))
+print("batch_size    : "  + str(batch_size))
+print("num_epoch     : "  + str(num_epoch))
+print("record_dir    : "  + str(record_dir))
+print("model_path    : "  + str(model_path))
+print("use_scheduler : "  + str(use_scheduler))
+print("scheduler_step: "  + str(scheduler_step))
 
 
 def train():
@@ -41,9 +65,9 @@ def train():
     model_decoder = AtNet_decoder(time_split*fs,150,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
-    optimizer_spatial = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.5, 0.999))
-    optimizer_temporal = optim.Adam(model_temporal.parameters(),lr = 1e-4, betas = (0.5, 0.999))
-    optimizer_decoder = optim.Adam(model_decoder.parameters(),lr = 1e-4, betas = (0.5, 0.999))
+    optimizer_spatial = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.9, 0.999))
+    optimizer_temporal = optim.Adam(model_temporal.parameters(),lr = 1e-4, betas = (0.9, 0.999))
+    optimizer_decoder = optim.Adam(model_decoder.parameters(),lr = 1e-4, betas = (0.9, 0.999))
     
     if use_scheduler:
         scheduler_spatial = StepLR(optimizer_spatial, scheduler_step, 0.1)
@@ -63,6 +87,7 @@ def train():
         model_temporal.train()
         model_decoder.train()
         print("training on epoch: ", epoch)
+        total_loss = 0.0
 
         for i, batch_data in enumerate(tqdm(train_loader)):
             # if batch_data[0].shape[0] != batch_size:
@@ -87,6 +112,7 @@ def train():
             label = label.long()
             # print(label.shape)
             norm_loss = loss(pred_output, label)
+            total_loss += norm_loss
 
             optimizer_spatial.zero_grad()
             optimizer_temporal.zero_grad()
@@ -95,10 +121,10 @@ def train():
             optimizer_spatial.step()
             optimizer_temporal.step()
             optimizer_decoder.step()
-
             # print("finish one batch")
 
-        recoder.add_scalar('norm_Loss/train', norm_loss.item(), epoch)
+        recoder.add_scalar('Loss/norm_loss', norm_loss.item(), epoch)
+        recoder.add_scalar('Loss/loss', total_loss/len(train_loader), epoch)
         # recoder.add_scalar('Loss/train', loss.item(), epoch)
         print("testing")
         accuracy_train = test(model_spatial, model_temporal, model_decoder, train_dataset)
