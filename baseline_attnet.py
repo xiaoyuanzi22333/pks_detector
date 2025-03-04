@@ -6,7 +6,7 @@ import utils.utils as utils
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from model.pks_attn_net.SpatialNet import SpatialNet
+from model.pks_attn_net.SpatialNet import SpatialNet, SpatialNet_Res
 from model.pks_attn_net.TemporalNet import TemporalNet
 from model.pks_attn_net.decoder import AtNet_decoder
 import torch.optim as optim
@@ -14,17 +14,24 @@ from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import argparse
+import random
+
+
+
 
 
 parser = argparse.ArgumentParser(description="load parsers")
-parser.add_argument('--pth', type=str, default= "0000_00", help='log/model path')
-parser.add_argument('--scl', type=int, default= 0, help='use scheduler')
-parser.add_argument('--time_split', type=int, default= 3)
-parser.add_argument('--time_interval', type=int,default= 1)
-parser.add_argument('--batch_size', type=int,default= 32)
-parser.add_argument('--epoch', type=int, default = 90)
-parser.add_argument('--scl_step', type=int, default=60)
+parser.add_argument('--rand_seed', type=int)
+parser.add_argument('--pth', type=str, help='log/model path')
+parser.add_argument('--scl', type=int, help='use scheduler')
+parser.add_argument('--time_split', type=int)
+parser.add_argument('--time_interval', type=int)
+parser.add_argument('--batch_size', type=int)
+parser.add_argument('--epoch', type=int)
+parser.add_argument('--scl_step', type=int)
+parser.add_argument('--num_chd', type=int)
 args = parser.parse_args()
+
 
 print("loading params")
 exp_name = args.pth
@@ -39,6 +46,29 @@ record_dir = './logs/logs_' +str(time_split) + 's_' + exp_name
 model_path = './model_saves/model_saved_' +str(time_split) + 's_' + exp_name
 use_scheduler = False if args.scl==0 else True
 scheduler_step = args.scl_step
+num_chd = args.num_chd
+rand_seed = args.rand_seed
+
+
+# if rand_seed != 0:
+#     # 动态生成一个随机种子
+#     seed = random.randint(0, 1000)
+# else :
+#     # 使用固定的种子
+#     seed = 71
+
+# # 设置 Python 的随机种子
+# random.seed(seed)
+# # 设置 NumPy 的随机种子
+# np.random.seed(seed)
+# # 设置 PyTorch 的随机种子
+# torch.manual_seed(seed)
+# torch.cuda.manual_seed(seed)
+# torch.cuda.manual_seed_all(seed)  # 为所有 GPU 设置种子
+# # 确保 CUDA 的计算是确定性的（可能会牺牲一些性能）
+# torch.backends.cudnn.deterministic = True
+# torch.backends.cudnn.benchmark = False
+
 
 print("time_split    : "  + str(time_split))
 print("time_interval : "  + str(time_interval))
@@ -50,6 +80,10 @@ print("record_dir    : "  + str(record_dir))
 print("model_path    : "  + str(model_path))
 print("use_scheduler : "  + str(use_scheduler))
 print("scheduler_step: "  + str(scheduler_step))
+print("num_chd       : "  + str(num_chd))
+print("use_rand_seed : "  + str(rand_seed))
+# print("seed_number   : "  + str(seed))
+
 
 
 def train():
@@ -60,8 +94,9 @@ def train():
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    model_spatial = SpatialNet(time_split*fs,400,time_split*fs).cuda()
-    model_temporal = TemporalNet(30,[25,30],time_split*fs,5).cuda()
+    model_spatial = SpatialNet(time_split*fs,400,num_chd).cuda()
+    # model_spatial = SpatialNet_Res(in_ch=1,hid_ch=3,num_chd=3).cuda()
+    model_temporal = TemporalNet(30,[12,12],time_split*fs,5,num_chd).cuda()
     model_decoder = AtNet_decoder(time_split*fs,150,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
@@ -98,10 +133,13 @@ def train():
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
             # print("brake shape" + str(brake.shape))
+            inputs = [brake, steer, throttle]
 
-            spatial_output = model_spatial(brake, steer, throttle)
-            temp_output = model_temporal(brake, steer, throttle)
-
+            spatial_output = model_spatial(inputs)
+            temp_output = model_temporal(inputs)
+            
+            # print(spatial_output.shape)
+            # print(temp_output.shape)
             fused_output = spatial_output + temp_output
             pred_output = model_decoder(fused_output)
 
@@ -167,10 +205,12 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
+            inputs = [brake, steer, throttle]
+
 
             # 模型前向传播
-            spatial_output = model_spatial(brake, steer, throttle)
-            temp_output = model_temporal(brake, steer, throttle)
+            spatial_output = model_spatial(inputs)
+            temp_output = model_temporal(inputs)
             fused_output = spatial_output + temp_output
             pred_output = model_decoder(fused_output)
 

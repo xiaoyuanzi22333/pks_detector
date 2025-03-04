@@ -7,18 +7,18 @@ from utils.utils import split_tensor
 
 # basic structure of Resnet block
 class ResBasicBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, stride=1):
+    def __init__(self, in_ch, hid_ch, out_ch, stride=1):
 
         super(ResBasicBlock, self).__init__()
 
         self.cbl1 = nn.Sequential(
-            nn.Conv1d(in_ch, out_ch, kernel_size=3, stride=stride, padding=1, bias=False),
-            nn.BatchNorm1d(out_ch),
+            nn.Conv1d(in_ch, hid_ch, kernel_size=3, stride=stride, padding=1, bias=False),
+            nn.BatchNorm1d(hid_ch),
             nn.LeakyReLU(0.1),
         )
 
         self.cbl2 = nn.Sequential(
-            nn.Conv1d(out_ch, out_ch, kernel_size=3, stride=stride, padding=1, bias=False),
+            nn.Conv1d(hid_ch, out_ch, kernel_size=3, stride=stride, padding=1, bias=False),
             nn.BatchNorm1d(out_ch),
         )
 
@@ -27,8 +27,8 @@ class ResBasicBlock(nn.Module):
 
     def forward(self, input):
         identity = input
-        print("input encoder")
-        print(input.shape)
+        # print("input encoder")
+        # print(input.shape)
         output1 = self.cbl1(input)
         output2 = self.cbl2(output1)
         output = output2 + identity

@@ -4,3 +4,4 @@ logs*
 model_saved*
 .history
 plots
+output
