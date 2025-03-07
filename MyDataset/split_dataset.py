@@ -7,9 +7,9 @@ import json
 
 
 
-def generate_split_dataset(dataset,time_split, time_interval, new=False):
+def generate_split_dataset(dataset,data_path,new=False):
     length = len(dataset)
-    json_file = "dataset_split_indices" +str(time_split) + 's_' + str(time_interval) + 's'+".json"
+    json_file = "idx_" +data_path[2:]+".json"
     if not os.path.exists(json_file) or new:
         # 创建全新的索引
         train_size = int(0.85 * length)

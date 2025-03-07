@@ -141,6 +141,6 @@ if __name__ == "__main__":
     
     time_split = 3
     time_interval = 1
-    src_folder = './Data_new'
-    tgt_folder = './Data_new'+str(time_split)+'s_'+str(time_interval)+'s'
+    src_folder = './Data_new_large/map3'
+    tgt_folder = './Data_map3_'+str(time_split)+'s_'+str(time_interval)+'s'
     split_data_seconds(src_folder, tgt_folder, time_split, time_interval)

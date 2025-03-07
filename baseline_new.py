@@ -39,7 +39,7 @@ fs = 30
 time_split = args.time_split
 time_interval = args.time_interval
 cuda_device = 0
-data_path = './Data_new' +str(time_split) + 's_' + str(time_interval) + 's'
+data_path = './Data_map3_' +str(time_split) + 's_' + str(time_interval) + 's'
 batch_size = args.batch_size
 num_epoch = args.epoch
 record_dir = './logs_new/logs_' +str(time_split) + 's_' + exp_name
@@ -89,7 +89,7 @@ print("use_rand_seed : "  + str(rand_seed))
 def train():
     print("============start training============")
     dataset = simulator_dataset(data_path)
-    train_dataset, test_dataset = generate_split_dataset(dataset,time_split, time_interval, False)
+    train_dataset, test_dataset = generate_split_dataset(dataset,data_path, False)
     # exit()
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
