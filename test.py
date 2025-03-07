@@ -1,20 +1,15 @@
-import os
-import matplotlib.pyplot as plt
-import numpy as np
-from MyDataset.simulator_dataset import simulator_getter
+from model.pks_attn_net.SpatialNet_new import SpatialNet_new
+from model.pks_attn_net.TemporalNet_new import TemporalNet_new
+import torch
+import torch.nn as nn
 
 
-data_path = './Data'
+model_spat = SpatialNet_new(1,16,32)
+model_temp = TemporalNet_new(1, [16,16], 32)
+input = torch.randn(64, 90)
+inputs = [input, input, input]
+output_spat = model_spat(inputs)
+output_temp = model_temp(inputs)
 
-
-if __name__ == "__main__":
-    print("baseline")
-
-    training_dataset = simulator_getter(data_path)
-    max = 0
-    for brake, steer, throttle in training_dataset:
-        print(len(brake))
-        if len(brake) > max:
-            max = len(brake)
-    
-    print(max)
+print(output_spat.shape)
+print(output_temp.shape)

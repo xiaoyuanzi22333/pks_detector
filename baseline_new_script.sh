@@ -9,7 +9,7 @@ run_experiment() {
     
     # 在子shell中运行实验，防止变量污染
     (
-        python baseline_attnet.py \
+        python baseline_new.py \
             --num_chd=3 \
             --rand_seed="$RAND_SEED" \
             --pth="$EXP" \
@@ -28,12 +28,12 @@ run_experiment() {
 }
 
 # 启动所有实验（并行执行）
-run_experiment "35_02_4" 0
-run_experiment "35_02_5" 1
-run_experiment "35_02_6" 1
+run_experiment "37_02_1" 0
+run_experiment "37_02_2" 1
+run_experiment "37_02_3" 1
 
 # 实时监控输出（可选）
-tail -f output/output_35_01_{4,5,6}.txt &
+tail -f output/output_37_02_{1,2,3}.txt &
 
 # 等待所有实验完成
 echo "监控中... 按 Ctrl+C 终止监控（实验会继续后台运行）"

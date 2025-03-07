@@ -6,8 +6,8 @@ import utils.utils as utils
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from model.pks_attn_net.SpatialNet import SpatialNet, SpatialNet_Res
-from model.pks_attn_net.TemporalNet import TemporalNet
+from model.pks_attn_net.SpatialNet_new import SpatialNet_new
+from model.pks_attn_net.TemporalNet_new import TemporalNet_new
 from model.pks_attn_net.decoder import AtNet_decoder
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -94,10 +94,9 @@ def train():
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    model_spatial = SpatialNet(time_split*fs,200,num_chd).cuda()
-    # model_spatial = SpatialNet_Res(in_ch=1,hid_ch=3,num_chd=3).cuda()
-    model_temporal = TemporalNet(30,[12,12],time_split*fs,5,num_chd).cuda()
-    model_decoder = AtNet_decoder(time_split*fs,40,2).cuda()
+    model_spatial = SpatialNet_new(1,32,64).cuda().cuda()
+    model_temporal = TemporalNet_new(1, [32,32], 64).cuda()
+    model_decoder = AtNet_decoder(64,16,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
     optimizer_spatial = optim.Adam(model_spatial.parameters(),lr = 1e-4, betas = (0.9, 0.999))
