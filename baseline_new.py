@@ -40,7 +40,7 @@ fs = 30
 time_split = args.time_split
 time_interval = args.time_interval
 cuda_device = 0
-data_path = './Data_map3_' +str(time_split) + 's_' + str(time_interval) + 's'
+data_path = './Data_map0_' +str(time_split) + 's_' + str(time_interval) + 's'
 batch_size = args.batch_size
 num_epoch = args.epoch
 record_dir = './logs_new/logs_' +str(time_split) + 's_' + exp_name
@@ -221,7 +221,7 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
             
             correct += (pred_class == label).sum().item()
             # print(correct)
-            total += batch_size
+            total += batch_data[0].shape[0]
 
         accuracy = correct / total
         return accuracy

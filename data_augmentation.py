@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import shutil
 import time
 
 
@@ -117,8 +118,11 @@ def split_data_seconds(src, target, split_time, interval_time):
                 np.save(os.path.join(tgt_file + str(i), 'steer_data.npy'), steer_data[i:i+fs*split_time])
                 np.save(os.path.join(tgt_file + str(i), 'throttle_data.npy'), throttle_data[i:i+fs*split_time])
                 
-                
-                
+
+
+def fuse_dataset_together(src_folder, tgt_folder):
+    shutil.copytree(src_folder, tgt_folder, dirs_exist_ok=True)
+    
 
 
 if __name__ == "__main__":
@@ -139,8 +143,16 @@ if __name__ == "__main__":
     # tgt_folder = "./Data_3s_1s/abnormal_test_left/2025_01_09_19-38-30120"
     # visulize_noise_data(src_folder, tgt_folder)
     
-    time_split = 3
-    time_interval = 1
-    src_folder = './Data_new_large/map3'
-    tgt_folder = './Data_map3_'+str(time_split)+'s_'+str(time_interval)+'s'
-    split_data_seconds(src_folder, tgt_folder, time_split, time_interval)
+    src_folder1 = "./Data_map1_3s_1s/abnormal"
+    src_folder2 = "./Data_map2_3s_1s/abnormal"
+    src_folder3 = "./Data_map3_3s_1s/abnormal"
+    tgt_folder = "./Data_map0_3s_1s/abnormal"
+    fuse_dataset_together(src_folder1, tgt_folder)
+    fuse_dataset_together(src_folder2, tgt_folder)
+    fuse_dataset_together(src_folder3, tgt_folder)
+    
+    # time_split = 3
+    # time_interval = 1
+    # src_folder = './Data_new_large/map3'
+    # tgt_folder = './Data_map3_'+str(time_split)+'s_'+str(time_interval)+'s'
+    # split_data_seconds(src_folder, tgt_folder, time_split, time_interval)

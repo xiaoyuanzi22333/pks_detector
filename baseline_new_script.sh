@@ -28,12 +28,12 @@ run_experiment() {
 }
 
 # 启动所有实验（并行执行）
-run_experiment "38_01_2" 1
-run_experiment "38_01_1" 0
-run_experiment "38_01_3" 1
+run_experiment "38_00_2" 1
+run_experiment "38_00_1" 0
+run_experiment "38_00_3" 1
 
 # 实时监控输出（可选）
-tail -f output/output_38_01_{1,2,3}.txt &
+tail -f output/output_38_00_{1,2,3}.txt &
 
 # 等待所有实验完成
 echo "监控中... 按 Ctrl+C 终止监控（实验会继续后台运行）"
