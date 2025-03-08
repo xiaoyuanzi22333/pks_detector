@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 from model.pks_attn_net.SpatialNet_new import SpatialNet_new
 from model.pks_attn_net.TemporalNet_new import TemporalNet_new
+from model.pks_attn_net.TemporalNet_new_2 import TemporalNet_new_2
 from model.pks_attn_net.decoder import AtNet_decoder
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
@@ -95,7 +96,8 @@ def train():
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
     model_spatial = SpatialNet_new(1,32,64).cuda().cuda()
-    model_temporal = TemporalNet_new(1, [32,32], 64).cuda()
+    # model_temporal = TemporalNet_new(1, [32,32], 64).cuda() #old
+    model_temporal = TemporalNet_new_2(1, [32,32], 64).cuda() #new
     model_decoder = AtNet_decoder(64,16,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))

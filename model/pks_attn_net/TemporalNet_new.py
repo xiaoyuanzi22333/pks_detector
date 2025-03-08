@@ -70,3 +70,8 @@ class TemporalNet_new(nn.Module):
         output = self.fusion_mlp(fused_global)
         
         return output
+    
+    
+    
+
+
