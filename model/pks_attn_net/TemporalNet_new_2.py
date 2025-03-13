@@ -14,58 +14,54 @@ class TemporalNet_new_2(nn.Module):
         self.num_chd = num_chd
         self.split_len = (data_len - win_len) // 15 + 1
         self.Head_tcns = nn.ModuleList([
-            Head_fusion(in_ch,hid_ch,num_chd) for _ in range(self.split_len)
+            Head_fusion(in_ch,hid_ch[0],num_chd) for _ in range(self.split_len)
         ])
         
-        self.mlp1 = nn.ModuleList([
-            MLP_1D(hid_ch[-1], hid_ch[-1]) for _ in range(num_chd)    
-        ])
-        
-        self.mlp2 = nn.ModuleList([
-            MLP_1D(hid_ch[-1], out_ch) for _ in range(num_chd)  
-        ])
+        self.tcn = TemporalConvNet(hid_ch[0], hid_ch)
+        self.mlp1 = MLP_1D(hid_ch[-1], hid_ch[-1])
+        self.mlp2 = MLP_1D(hid_ch[-1], out_ch * 3)
+        self.out_ch = out_ch
         
         self.cross_modal_attn = MultiModalModel(embed_dim=out_ch, num_chd=num_chd, num_heads=1)
-        self.weights = nn.Parameter(torch.ones(3) / 3)
-        self.fusion_mlp = nn.Sequential(
-            nn.Linear(out_ch, out_ch // 2),
-            nn.ReLU(),
-            nn.Linear(out_ch // 2, out_ch)
-        )
+        self.weights = nn.Parameter(torch.ones(num_chd) / num_chd)
     
 
     def forward(self, inputs):
         if len(inputs) != self.num_chd:
             raise ValueError("input dimension not fits")
         
-        # input [[batch_size, L] * 3]
+        # input [[batch_size, L] * num_chd]
         # 对每个模态的数据进行分割
-        tcn_heads_input = []
+        heads_input = []
         for i in range(self.num_chd):
             split_inputs = split_tensor(inputs[i]) # [ [batch_size, win_len] * split_len ]
             if len(split_inputs) != self.split_len:
                 raise ValueError("check the splited windows")
-            tcn_heads_input.append(split_inputs) # [[ [batch_size, win_len] * split_len ] * 3]
+            heads_input.append(split_inputs) # [[ [batch_size, win_len] * split_len ] * num_chd]
         
-        tcn_heads_input = [[tcn_heads_input[j][i] for j in range(self.num_chd)] for i in range(self.split_len)]
-        # [[ [batch_size, win_len] * 3 ] * split_len]      
+        heads_input = [[heads_input[j][i] for j in range(self.num_chd)] for i in range(self.split_len)]
+        # [[ [batch_size, win_len] * num_chd ] * split_len]      
         
         # 切割之后的数据依次放入head_tcn进行处理
-        tcn_heads_output = []
+        heads_output = []
         for j in range(self.split_len):
-            head_output = self.Head_tcns[j](tcn_heads_input[j]) # [batch_size, win_len, hid_ch[-1]]
+            head_output = self.Head_tcns[j](heads_input[j]) # [batch_size, win_len, hid_ch[0]]
             # print("head_output: " + str(head_output.shape))
-            tcn_heads_output.append(head_output) # [[batch_size, win_len, hid_ch[-1]] * split_len]
-        tcn_output = torch.cat(tcn_heads_output, dim=1) # [batch_size, win_len*split_len, hid_ch[-1]]
-            
-        output_encode = []
-        # encode TCN处理的融合变量使其具备有自己的特征
-        for i in range(self.num_chd):
-            output = self.mlp1[i](tcn_output) + tcn_output
-            output = self.mlp2[i](output) 
-            output_encode.append(output)
+            heads_output.append(head_output) # [[batch_size, win_len, hid_ch[0]] * split_len]
+        tcn_input = torch.cat(heads_output, dim=1) # [batch_size, win_len*split_len, hid_ch[0]]
         
+        tcn_input = tcn_input.permute(0,2,1)
+        tcn_output = self.tcn(tcn_input)
+        tcn_output = tcn_output.permute(0,2,1)
+            
+        # encode TCN处理的融合变量使其具备有自己的特征
+        output = self.mlp1(tcn_output) + tcn_output
+        output = self.mlp2(output) 
+        output_encode = torch.split(output, self.out_ch, dim=-1)
+        
+        # 使用attetion
         fused_outputs = self.cross_modal_attn(output_encode)
+        # fused_outputs = output_encode
         
         weighted_output = 0
         for i in range(self.num_chd):
@@ -73,40 +69,32 @@ class TemporalNet_new_2(nn.Module):
         
         # 全局池化（替代裁剪 catch）
         fused_global = torch.mean(weighted_output, dim=1)  # [batchsize, hid_ch[-1]]
-        output = self.fusion_mlp(fused_global)
         
-        return output
+        return fused_global
 
 
 class Head_fusion(nn.Module):
     def __init__(self, in_ch, hid_ch, num_chd):
         super(Head_fusion, self).__init__()
         self.num_chd = num_chd      
-        self.early_fusion = MLP_1D(in_ch*3, hid_ch[0])     
-        self.tcn = TemporalConvNet(hid_ch[0], hid_ch)
+        self.early_fusion = MLP_1D(in_ch*num_chd, hid_ch)     
         
     
     def forward(self, inputs):
         if len(inputs) != self.num_chd:
             raise ValueError("input dimension not fits")
         
-        # inputs [[batchsize, L] * 3]
+        # inputs [[batchsize, L] * num_chd]
         inputs_unsqueeze = []
         for i in range(self.num_chd):
             inputs_unsqueeze.append(inputs[i].unsqueeze(-1))
         
-        combined = torch.cat(inputs_unsqueeze, dim=-1) # [batchsize, L, 3]
+        combined = torch.cat(inputs_unsqueeze, dim=-1) # [batchsize, L, num_chd]
         # print("combined: " + str(combined.shape))
         fused_early = self.early_fusion(combined) 
         # [batchsize, L, hid_ch[0]]
         
-        # 调整维度以适配 TCN
-        fused_early = fused_early.permute(0, 2, 1)  # [batchsize, hid_ch[0], L]
-        # TCN 处理时间序列
-        tcn_output = self.tcn(fused_early)  # [batchsize, hid_ch[-1], L]
-        tcn_output = tcn_output.permute(0, 2, 1)  # [batchsize, L, hid_ch[-1]]
-        
-        return tcn_output
+        return fused_early
     
 
 

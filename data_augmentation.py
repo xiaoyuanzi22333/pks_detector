@@ -143,16 +143,22 @@ if __name__ == "__main__":
     # tgt_folder = "./Data_3s_1s/abnormal_test_left/2025_01_09_19-38-30120"
     # visulize_noise_data(src_folder, tgt_folder)
     
-    src_folder1 = "./Data_map1_3s_1s/abnormal"
-    src_folder2 = "./Data_map2_3s_1s/abnormal"
-    src_folder3 = "./Data_map3_3s_1s/abnormal"
-    tgt_folder = "./Data_map0_3s_1s/abnormal"
-    fuse_dataset_together(src_folder1, tgt_folder)
-    fuse_dataset_together(src_folder2, tgt_folder)
-    fuse_dataset_together(src_folder3, tgt_folder)
+    # src_folder1 = "./Data_map1_3s_1s/abnormal"
+    # src_folder2 = "./Data_map2_3s_1s/abnormal"
+    # src_folder3 = "./Data_map3_3s_1s/abnormal"
+    # tgt_folder = "./Data_map0_3s_1s/abnormal"
+    # fuse_dataset_together(src_folder1, tgt_folder)
+    # fuse_dataset_together(src_folder2, tgt_folder)
+    # fuse_dataset_together(src_folder3, tgt_folder)
     
-    # time_split = 3
-    # time_interval = 1
-    # src_folder = './Data_new_large/map3'
-    # tgt_folder = './Data_map3_'+str(time_split)+'s_'+str(time_interval)+'s'
-    # split_data_seconds(src_folder, tgt_folder, time_split, time_interval)
+    time_interval = 1
+    for j in range(5,9):
+        time_split = j+2
+        for i in range(3):
+            map_num = i+1
+            src_folder = './Data_new_large_311/map' + str(map_num)
+            if not os.path.exists('./Data_'+str(time_split)+'s'+str(time_interval)+'s'):
+                os.mkdir('./Data_'+str(time_split)+'s'+str(time_interval)+'s')
+            tgt_folder = './Data_'+str(time_split)+'s'+str(time_interval)+'s/Data_map'+str(map_num)+'_'+str(time_split)+'s_'+str(time_interval)+'s'
+            print("time split: " + str(time_split) + ", map number: " + str(map_num))
+            split_data_seconds(src_folder, tgt_folder, time_split, time_interval)

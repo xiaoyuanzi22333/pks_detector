@@ -5,16 +5,18 @@ mkdir -p output
 
 run_experiment() {
     local EXP=$1
-    local RAND_SEED=$2
+    local MAP=$2
+    local TIM=$3
     
     # 在子shell中运行实验，防止变量污染
     (
         python baseline_new.py \
+            --map="$MAP"\
             --num_chd=3 \
-            --rand_seed="$RAND_SEED" \
+            --rand_seed=0 \
             --pth="$EXP" \
-            --scl=0 \
-            --time_split=3 \
+            --scl=1 \
+            --time_split=$TIM \
             --time_interval=1 \
             --batch_size=32 \
             --epoch=100 \
@@ -28,12 +30,16 @@ run_experiment() {
 }
 
 # 启动所有实验（并行执行）
-run_experiment "38_00_2" 1
-run_experiment "38_00_1" 0
-run_experiment "38_00_3" 1
+# exp map time
+run_experiment "312_02-3_2" 3 2
+run_experiment "312_02-3_1" 3 2
+run_experiment "312_02-3_3" 3 2
+run_experiment "312_02-3_4" 3 2
+run_experiment "312_02-3_5" 3 2
+
 
 # 实时监控输出（可选）
-tail -f output/output_38_00_{1,2,3}.txt &
+tail -f output/output_312_09-2_{1,2,3,4,5}.txt &
 
 # 等待所有实验完成
 echo "监控中... 按 Ctrl+C 终止监控（实验会继续后台运行）"

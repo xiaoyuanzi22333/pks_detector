@@ -22,6 +22,7 @@ import random
 
 
 parser = argparse.ArgumentParser(description="load parsers")
+parser.add_argument('--map', type=int)
 parser.add_argument('--rand_seed', type=int)
 parser.add_argument('--pth', type=str, help='log/model path')
 parser.add_argument('--scl', type=int, help='use scheduler')
@@ -40,10 +41,11 @@ fs = 30
 time_split = args.time_split
 time_interval = args.time_interval
 cuda_device = 0
-data_path = './Data_map0_' +str(time_split) + 's_' + str(time_interval) + 's'
+data_sub_path = 'Data_map' + str(args.map) + '_' +str(time_split) + 's_' + str(time_interval) + 's'
+data_path = './Data_'+str(time_split)+'s'+str(time_interval)+'s/'+ data_sub_path
 batch_size = args.batch_size
 num_epoch = args.epoch
-record_dir = './logs_new/logs_' +str(time_split) + 's_' + exp_name
+record_dir = './logs_timer/logs_timer_'+str(time_split)+'/logs_' +str(time_split) + 's_' + exp_name
 model_path = './model_saves/model_saved_' +str(time_split) + 's_' + exp_name
 use_scheduler = False if args.scl==0 else True
 scheduler_step = args.scl_step
@@ -90,14 +92,14 @@ print("use_rand_seed : "  + str(rand_seed))
 def train():
     print("============start training============")
     dataset = simulator_dataset(data_path)
-    train_dataset, test_dataset = generate_split_dataset(dataset,data_path, False)
+    train_dataset, test_dataset = generate_split_dataset(dataset,data_sub_path, False)
     # exit()
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    model_spatial = SpatialNet_new(1,32,64).cuda().cuda()
+    model_spatial = SpatialNet_new(1,32,64, num_chd=num_chd).cuda().cuda()
     # model_temporal = TemporalNet_new(1, [32,32], 64).cuda() #old
-    model_temporal = TemporalNet_new_2(1, [32,32], 64).cuda() #new
+    model_temporal = TemporalNet_new_2(1, [32,32], 64, data_len=fs*time_split, num_chd=num_chd).cuda() #new
     model_decoder = AtNet_decoder(64,16,2).cuda()
 
     print("Device: " +str(next(model_spatial.parameters()).device))
@@ -136,12 +138,12 @@ def train():
             # print("brake shape" + str(brake.shape))
             inputs = [brake, steer, throttle]
 
-            spatial_output = model_spatial(inputs)
+            # spatial_output = model_spatial(inputs)
             temp_output = model_temporal(inputs)
             
             # print(spatial_output.shape)
             # print(temp_output.shape)
-            fused_output = spatial_output + temp_output
+            fused_output = temp_output
             pred_output = model_decoder(fused_output)
 
             # print("pred_output: " + str(pred_output.shape))            
@@ -210,9 +212,9 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
 
 
             # 模型前向传播
-            spatial_output = model_spatial(inputs)
+            # spatial_output = model_spatial(inputs)
             temp_output = model_temporal(inputs)
-            fused_output = spatial_output + temp_output
+            fused_output = temp_output
             pred_output = model_decoder(fused_output)
 
             # 获取预测的类别

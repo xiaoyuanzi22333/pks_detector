@@ -12,21 +12,14 @@ class SpatialNet_new(nn.Module):
         
         self.early_fusion = MLP_1D(in_ch*num_chd, hid_ch)
 
-        self.mlp_1 = nn.ModuleList([
-            MLP_1D(hid_ch, hid_ch) for _ in range(num_chd)
-        ])
-        
-        self.mlp_2 = nn.ModuleList([
-            MLP_1D(hid_ch, out_ch) for _ in range(num_chd)
-        ])
+        self.mlp_1 = MLP_1D(hid_ch, hid_ch)
+        self.mlp_2 = MLP_1D(hid_ch, out_ch*3) 
+        self.out_ch = out_ch
         
         self.cross_modal_attn = MultiModalModel(embed_dim=out_ch,num_chd=num_chd ,num_heads=1)
+            
         self.weights = nn.Parameter(torch.ones(num_chd) / num_chd)
-        self.fusion_mlp = nn.Sequential(
-            nn.Linear(out_ch, out_ch // 2),
-            nn.ReLU(),
-            nn.Linear(out_ch // 2, out_ch)
-        )
+
         
     def forward(self, inputs):
         if len(inputs) != self.num_chd:
@@ -39,28 +32,29 @@ class SpatialNet_new(nn.Module):
 
         # [batchsize, L, 1]
         combined = torch.cat(input_unsqueeze, dim=-1)
-        # [batchsize, L, 3]
+        # [batchsize, L, num_chd]
         fused_early = self.early_fusion(combined)
         # [batchsize, L, hid_ch]
 
-        output_chds = []
-        for i in range(self.num_chd):
-            output = self.mlp_1[i](fused_early) + fused_early
-            output = self.mlp_2[i](output) 
-            output_chds.append(output)
-        # output [batchsize, L, out_ch]
-
-        fused_outputs = self.cross_modal_attn(output_chds)
+        output = self.mlp_1(fused_early) + fused_early
+        output = self.mlp_2(output)
+        #output [batchsize, L, out_ch*3]
         
+        output_chds = torch.split(output, self.out_ch, dim=2)
+        # output_chds [[batchsize, L, out_ch]* 3]
+        
+        # 使用attention
+        fused_outputs = self.cross_modal_attn(output_chds)
+        # fused_outputs = output_chds
+            
         output_weight = 0
         for i in range(self.num_chd):
             output_weight += fused_outputs[i]*self.weights[i]
         # [batch_size, L, out_ch]
         fused_global = torch.mean(output_weight, dim=1)
         # [batch_size, out_ch]
-        output = self.fusion_mlp(fused_global)
         
-        return output
+        return fused_global
         
     
 

@@ -9,7 +9,7 @@ import json
 
 def generate_split_dataset(dataset,data_path,new=False):
     length = len(dataset)
-    json_file = "idx_" +data_path[2:]+".json"
+    json_file = "./idx_folder/idx_" +data_path+".json"
     if not os.path.exists(json_file) or new:
         # 创建全新的索引
         train_size = int(0.85 * length)
