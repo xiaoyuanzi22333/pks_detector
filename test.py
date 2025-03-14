@@ -6,7 +6,7 @@ import torch.nn as nn
 import json
 
 # 指定 JSON 文件路径
-file_path = "./idx_Data_map2_5s_1s.json"
+file_path = "./idx_folder/idx_Data_map2_5s_1s.json"
 
 # 打开并读取 JSON 文件
 with open(file_path, 'r', encoding='utf-8') as file:
@@ -18,7 +18,10 @@ print(len(data["train_indices"]))
 print(len(data["test_indices"]))  
 
 data_all = data["train_indices"] + data["test_indices"]
+a:int = 1
+data_all = data_all[0:int(len(data_all)*a/10)]
 data_all = sorted(data_all)
+print(len(data_all))
 print(data_all[-1])
 print(len(data_all) != len(set(data_all)))
 

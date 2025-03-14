@@ -2,9 +2,9 @@ python baseline_new.py \
     --map=3 \
     --num_chd=3 \
     --rand_seed=0 \
-    --pth=312_02-3_1 \
+    --pth=312_09-3_1 \
     --scl=1 \
-    --time_split=2 \
+    --time_split=9 \
     --time_interval=1 \
     --batch_size=32 \
     --epoch=100 \

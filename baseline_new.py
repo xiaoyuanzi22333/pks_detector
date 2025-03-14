@@ -23,6 +23,7 @@ import random
 
 parser = argparse.ArgumentParser(description="load parsers")
 parser.add_argument('--map', type=int)
+parser.add_argument('--partition', type=int, default=100)
 parser.add_argument('--rand_seed', type=int)
 parser.add_argument('--pth', type=str, help='log/model path')
 parser.add_argument('--scl', type=int, help='use scheduler')
@@ -45,13 +46,13 @@ data_sub_path = 'Data_map' + str(args.map) + '_' +str(time_split) + 's_' + str(t
 data_path = './Data_'+str(time_split)+'s'+str(time_interval)+'s/'+ data_sub_path
 batch_size = args.batch_size
 num_epoch = args.epoch
-record_dir = './logs_timer/logs_timer_'+str(time_split)+'/logs_' +str(time_split) + 's_' + exp_name
+record_dir = './logs_partition' + '/logs_' +str(time_split) + 's_' + exp_name
 model_path = './model_saves/model_saved_' +str(time_split) + 's_' + exp_name
 use_scheduler = False if args.scl==0 else True
 scheduler_step = args.scl_step
 num_chd = args.num_chd
 rand_seed = args.rand_seed
-
+partition = args.partition
 
 # if rand_seed != 0:
 #     # 动态生成一个随机种子
@@ -92,7 +93,7 @@ print("use_rand_seed : "  + str(rand_seed))
 def train():
     print("============start training============")
     dataset = simulator_dataset(data_path)
-    train_dataset, test_dataset = generate_split_dataset(dataset,data_sub_path, False)
+    train_dataset, test_dataset = generate_split_dataset(dataset,data_sub_path,partition, False)
     # exit()
     
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)

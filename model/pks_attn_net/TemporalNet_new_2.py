@@ -56,7 +56,7 @@ class TemporalNet_new_2(nn.Module):
             
         # encode TCN处理的融合变量使其具备有自己的特征
         output = self.mlp1(tcn_output) + tcn_output
-        output = self.mlp2(output) 
+        output = self.mlp2(output)
         output_encode = torch.split(output, self.out_ch, dim=-1)
         
         # 使用attetion
