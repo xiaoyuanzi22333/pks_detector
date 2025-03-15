@@ -33,9 +33,11 @@ run_experiment() {
 
 # 启动所有实验（并行执行）
 # exp(date_time-map_partition_expnumber) map time partition
-run_experiment "314_04-2_base1" 2 4 100
-run_experiment "314_04-2_base2" 2 4 100
-run_experiment "314_04-2_base3" 2 4 100
+run_experiment "315_04-1_base1" 1 4 100
+run_experiment "315_04-1_base2" 1 4 100
+run_experiment "315_04-1_base3" 1 4 100
+run_experiment "315_04-1_base4" 1 4 100
+run_experiment "315_04-1_base5" 1 4 100
 
 
 

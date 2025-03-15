@@ -46,8 +46,8 @@ data_sub_path = 'Data_map' + str(args.map) + '_' +str(time_split) + 's_' + str(t
 data_path = './Data_'+str(time_split)+'s'+str(time_interval)+'s/'+ data_sub_path
 batch_size = args.batch_size
 num_epoch = args.epoch
-record_dir = './logs_partition' + '/logs_' +str(time_split) + 's_' + exp_name
-model_path = './model_saves/model_saved_' +str(time_split) + 's_' + exp_name
+record_dir = './logs_base' + '/logs_' +str(time_split) + 's_' + exp_name
+model_path = './model_baseline/model_saved_' +str(time_split) + 's_' + exp_name
 use_scheduler = False if args.scl==0 else True
 scheduler_step = args.scl_step
 num_chd = args.num_chd

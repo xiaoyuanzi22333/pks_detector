@@ -59,12 +59,9 @@ class TemporalNet_new_2(nn.Module):
         output = self.mlp1(tcn_output) + tcn_output
         output = self.mlp2(output)
         output_encode = torch.split(output, self.win_len, dim=1)
-        # print(len(output_encode))
-        # print(self.split_len)
-        
+
         # 使用attetion
         fused_outputs = self.cross_modal_attn(output_encode)
-        print(len(fused_outputs))
         # fused_outputs = output_encode
         
         weighted_output = 0
