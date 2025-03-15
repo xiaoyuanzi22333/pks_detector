@@ -129,8 +129,8 @@ def train():
         total_loss = 0.0
 
         for i, batch_data in enumerate(tqdm(train_loader)):
-            # if batch_data[0].shape[0] != batch_size:
-            #     continue
+            if batch_data[0].shape[0] == 1:
+                continue
             
             brake = batch_data[0].to(cuda_device).float()
             steer = batch_data[1].to(cuda_device).float()
@@ -139,12 +139,12 @@ def train():
             # print("brake shape" + str(brake.shape))
             inputs = [brake, steer, throttle]
 
-            # spatial_output = model_spatial(inputs)
+            spatial_output = model_spatial(inputs)
             temp_output = model_temporal(inputs)
             
             # print(spatial_output.shape)
             # print(temp_output.shape)
-            fused_output = temp_output
+            fused_output = temp_output + spatial_output
             pred_output = model_decoder(fused_output)
 
             # print("pred_output: " + str(pred_output.shape))            
@@ -213,9 +213,9 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
 
 
             # 模型前向传播
-            # spatial_output = model_spatial(inputs)
+            spatial_output = model_spatial(inputs)
             temp_output = model_temporal(inputs)
-            fused_output = temp_output
+            fused_output = temp_output + spatial_output
             pred_output = model_decoder(fused_output)
 
             # 获取预测的类别

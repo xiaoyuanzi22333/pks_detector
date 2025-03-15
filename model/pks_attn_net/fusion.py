@@ -4,7 +4,7 @@ import numpy as np
 from itertools import combinations
 
 class MultiModalModel(nn.Module):
-    def __init__(self, embed_dim, num_chd, num_heads=1):
+    def __init__(self, embed_dim,num_chd, num_heads=1):
         super(MultiModalModel, self).__init__()
         self.num_chd = num_chd
         # 每对模态使用一个独立的 Cross Attention

@@ -9,21 +9,22 @@ from .tcn import TemporalConvNet
 
 
 class TemporalNet_new_2(nn.Module):
-    def __init__(self, in_ch: int, hid_ch: list, out_ch: int, data_len=90, win_len=30, step=15, num_chd=3):
+    def __init__(self, in_ch: int, hid_ch: list, out_ch: int, data_len, win_len=30, step=15, num_chd=3):
         super(TemporalNet_new_2, self).__init__()
         self.num_chd = num_chd
         self.split_len = (data_len - win_len) // 15 + 1
+        self.win_len = win_len
         self.Head_tcns = nn.ModuleList([
             Head_fusion(in_ch,hid_ch[0],num_chd) for _ in range(self.split_len)
         ])
         
         self.tcn = TemporalConvNet(hid_ch[0], hid_ch)
         self.mlp1 = MLP_1D(hid_ch[-1], hid_ch[-1])
-        self.mlp2 = MLP_1D(hid_ch[-1], out_ch * 3)
+        self.mlp2 = MLP_1D(hid_ch[-1], out_ch)
         self.out_ch = out_ch
         
-        self.cross_modal_attn = MultiModalModel(embed_dim=out_ch, num_chd=num_chd, num_heads=1)
-        self.weights = nn.Parameter(torch.ones(num_chd) / num_chd)
+        self.cross_modal_attn = MultiModalModel(embed_dim=out_ch, num_chd=self.split_len, num_heads=1)
+        self.weights = nn.Parameter(torch.ones(self.split_len) / self.split_len)
     
 
     def forward(self, inputs):
@@ -40,7 +41,7 @@ class TemporalNet_new_2(nn.Module):
             heads_input.append(split_inputs) # [[ [batch_size, win_len] * split_len ] * num_chd]
         
         heads_input = [[heads_input[j][i] for j in range(self.num_chd)] for i in range(self.split_len)]
-        # [[ [batch_size, win_len] * num_chd ] * split_len]      
+        # [[ [batch_size, win_len] * num_chd ] * split_len]
         
         # 切割之后的数据依次放入head_tcn进行处理
         heads_output = []
@@ -57,14 +58,17 @@ class TemporalNet_new_2(nn.Module):
         # encode TCN处理的融合变量使其具备有自己的特征
         output = self.mlp1(tcn_output) + tcn_output
         output = self.mlp2(output)
-        output_encode = torch.split(output, self.out_ch, dim=-1)
+        output_encode = torch.split(output, self.win_len, dim=1)
+        # print(len(output_encode))
+        # print(self.split_len)
         
         # 使用attetion
         fused_outputs = self.cross_modal_attn(output_encode)
+        print(len(fused_outputs))
         # fused_outputs = output_encode
         
         weighted_output = 0
-        for i in range(self.num_chd):
+        for i in range(self.split_len):
             weighted_output += fused_outputs[i]*self.weights[i]
         
         # 全局池化（替代裁剪 catch）

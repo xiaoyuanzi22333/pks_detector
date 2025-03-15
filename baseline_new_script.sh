@@ -32,23 +32,17 @@ run_experiment() {
 }
 
 # 启动所有实验（并行执行）
-# exp(date_time-map_partition_expnumber) map time
-run_experiment "314_04-1_10_1" 1 4 10
-run_experiment "314_04-1_10_2" 1 4 10
-run_experiment "314_04-1_10_3" 1 4 10
+# exp(date_time-map_partition_expnumber) map time partition
+run_experiment "314_04-2_base1" 2 4 100
+run_experiment "314_04-2_base2" 2 4 100
+run_experiment "314_04-2_base3" 2 4 100
 
-run_experiment "314_04-1_20_1" 1 4 20
-run_experiment "314_04-1_20_2" 1 4 20
-run_experiment "314_04-1_20_3" 1 4 20
 
 
 # 实时监控输出（可选）
-tail -f output/output_314_04-1_{10,20}_1.txt &
+tail -f output/output_314_04-2_base{1,2,3}.txt &
 
 # 等待所有实验完成
 echo "监控中... 按 Ctrl+C 终止监控（实验会继续后台运行）"
 wait "${pids[@]}"
 
-# 生成总结报告
-echo "==== 实验状态报告 ===="
-cat output/status.log

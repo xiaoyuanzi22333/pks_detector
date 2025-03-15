@@ -1,10 +1,11 @@
 python baseline_new.py \
-    --map=3 \
+    --map=1 \
+    --partition=40 \
     --num_chd=3 \
     --rand_seed=0 \
-    --pth=312_09-3_1 \
+    --pth=314_04-1_40_1 \
     --scl=1 \
-    --time_split=9 \
+    --time_split=4 \
     --time_interval=1 \
     --batch_size=32 \
     --epoch=100 \
