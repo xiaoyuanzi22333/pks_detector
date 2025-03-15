@@ -14,7 +14,7 @@ run_experiment() {
         python baseline_new.py \
             --map="$MAP"\
             --partition="$PAR"\
-            --num_chd=3 \
+            --num_chd=2 \
             --rand_seed=0 \
             --pth="$EXP" \
             --scl=1 \
@@ -33,16 +33,17 @@ run_experiment() {
 
 # 启动所有实验（并行执行）
 # exp(date_time-map_partition_expnumber) map time partition
-run_experiment "315_04-1_base1" 1 4 100
-run_experiment "315_04-1_base2" 1 4 100
-run_experiment "315_04-1_base3" 1 4 100
-run_experiment "315_04-1_base4" 1 4 100
-run_experiment "315_04-1_base5" 1 4 100
+run_experiment "315_04-2_bs1" 2 4 100
+run_experiment "315_04-2_bs2" 2 4 100
+run_experiment "315_04-2_bs3" 2 4 100
+run_experiment "315_04-2_bs4" 2 4 100
+run_experiment "315_04-2_bs5" 2 4 100
+
 
 
 
 # 实时监控输出（可选）
-tail -f output/output_314_04-2_base{1,2,3}.txt &
+tail -f output/output_315_04-2_bs1.txt &
 
 # 等待所有实验完成
 echo "监控中... 按 Ctrl+C 终止监控（实验会继续后台运行）"

@@ -24,13 +24,13 @@ def count_files(folder_path):
 def validation():
     cuda_device = 0
     batch_size = 32
-    data_path = './Data_4s1s/Data_map2_4s_1s'
+    data_path = './Data_4s1s/Data_map3_4s_1s'
     test_dataset = simulator_dataset(data_path)
     model_spatial = SpatialNet_new(1,32,64,num_chd=3).cuda()
     model_temporal = TemporalNet_new_2(1, [32,32], 64, data_len=120, num_chd=3).cuda()
     model_decoder = AtNet_decoder(64,16,2).cuda()
     
-    model_path = "./model_saves/model_saved_4s_314_04-2_base1"
+    model_path = "./model_baseline/model_saved_4s_315_04-3_base2"
     dict_spatial = torch.load( model_path + "/spatial_epoch_100.pth")
     dict_temporal = torch.load( model_path + "/temporal_epoch_100.pth")
     dict_decoder = torch.load( model_path + "/decoder_epoch_100.pth")
@@ -80,4 +80,4 @@ def validation():
 if __name__ == "__main__":
     validation()
     
-    # print("number: " + str(count_files("./Data_4s1s/Data_map1_4s_1s")))
+    # print("number: " + str(count_files("./Data_4s1s/Data_map2_4s_1s")))

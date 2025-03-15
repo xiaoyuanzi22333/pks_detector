@@ -1,9 +1,9 @@
 python baseline_new.py \
-    --map=1 \
-    --partition=40 \
+    --map=2 \
+    --partition=100 \
     --num_chd=3 \
     --rand_seed=0 \
-    --pth=314_04-1_40_1 \
+    --pth=315_04-2_100_1 \
     --scl=1 \
     --time_split=4 \
     --time_interval=1 \

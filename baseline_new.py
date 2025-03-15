@@ -46,8 +46,8 @@ data_sub_path = 'Data_map' + str(args.map) + '_' +str(time_split) + 's_' + str(t
 data_path = './Data_'+str(time_split)+'s'+str(time_interval)+'s/'+ data_sub_path
 batch_size = args.batch_size
 num_epoch = args.epoch
-record_dir = './logs_base' + '/logs_' +str(time_split) + 's_' + exp_name
-model_path = './model_baseline/model_saved_' +str(time_split) + 's_' + exp_name
+record_dir = './logs_ch' + '/logs_' +str(time_split) + 's_' + exp_name
+model_path = './model_ch/model_saved_' +str(time_split) + 's_' + exp_name
 use_scheduler = False if args.scl==0 else True
 scheduler_step = args.scl_step
 num_chd = args.num_chd
@@ -137,7 +137,7 @@ def train():
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
             # print("brake shape" + str(brake.shape))
-            inputs = [brake, steer, throttle]
+            inputs = [brake, steer]
 
             spatial_output = model_spatial(inputs)
             temp_output = model_temporal(inputs)
@@ -209,7 +209,7 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
-            inputs = [brake, steer, throttle]
+            inputs = [brake, steer]
 
 
             # 模型前向传播
