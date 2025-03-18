@@ -19,8 +19,6 @@ import random
 
 
 
-
-
 parser = argparse.ArgumentParser(description="load parsers")
 parser.add_argument('--map', type=int)
 parser.add_argument('--partition', type=int, default=100)
@@ -46,7 +44,7 @@ data_sub_path = 'Data_map' + str(args.map) + '_' +str(time_split) + 's_' + str(t
 data_path = './Data_'+str(time_split)+'s'+str(time_interval)+'s/'+ data_sub_path
 batch_size = args.batch_size
 num_epoch = args.epoch
-record_dir = './logs_ch' + '/logs_' +str(time_split) + 's_' + exp_name
+record_dir = './logs_base' + '/logs_' +str(time_split) + 's_' + exp_name
 model_path = './model_ch/model_saved_' +str(time_split) + 's_' + exp_name
 use_scheduler = False if args.scl==0 else True
 scheduler_step = args.scl_step
@@ -137,22 +135,15 @@ def train():
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
             # print("brake shape" + str(brake.shape))
-            inputs = [brake, steer]
+            inputs = [brake, throttle, steer]
 
             spatial_output = model_spatial(inputs)
             temp_output = model_temporal(inputs)
             
-            # print(spatial_output.shape)
-            # print(temp_output.shape)
             fused_output = temp_output + spatial_output
             pred_output = model_decoder(fused_output)
 
-            # print("pred_output: " + str(pred_output.shape))            
-            
-            # print("pred_output: " + str(pred_output.shape)) 
-            # print(pred_output)
             label = label.long()
-            # print(label.shape)
             norm_loss = loss(pred_output, label)
             total_loss += norm_loss
 
@@ -209,7 +200,7 @@ def test(model_spatial, model_temporal, model_decoder, test_dataset):
             steer = batch_data[1].to(cuda_device).float()
             throttle = batch_data[2].to(cuda_device).float()
             label = batch_data[4].to(cuda_device).float()
-            inputs = [brake, steer]
+            inputs = [brake, throttle, steer]
 
 
             # 模型前向传播

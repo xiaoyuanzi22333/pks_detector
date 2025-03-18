@@ -45,6 +45,7 @@ class SpatialNet_new(nn.Module):
         
         # 使用attention
         fused_outputs = self.cross_modal_attn(output_chds)
+        # 不使用attention
         # fused_outputs = output_chds
             
         output_weight = 0

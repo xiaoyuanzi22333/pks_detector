@@ -62,6 +62,7 @@ class TemporalNet_new_2(nn.Module):
 
         # 使用attetion
         fused_outputs = self.cross_modal_attn(output_encode)
+        # 不使用attention
         # fused_outputs = output_encode
         
         weighted_output = 0

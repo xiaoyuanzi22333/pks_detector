@@ -1,12 +1,12 @@
-python baseline_new.py \
-    --map=2 \
+python baseline_CNNT.py \
+    --map=3 \
     --partition=100 \
     --num_chd=3 \
     --rand_seed=0 \
-    --pth=315_04-2_100_1 \
+    --pth=317_cnnt-3_5 \
     --scl=1 \
     --time_split=4 \
     --time_interval=1 \
     --batch_size=32 \
-    --epoch=100 \
-    --scl_step=70
+    --epoch=70 \
+    --scl_step=50
